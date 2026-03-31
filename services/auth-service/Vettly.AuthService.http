@@ -1,6 +1,45 @@
-@Vettly.AuthService_HostAddress = http://localhost:5252
+@baseUrl = http://localhost:5050
+@contentType = application/json
 
-GET {{Vettly.AuthService_HostAddress}}/weatherforecast/
-Accept: application/json
+# After login/register, paste the returned tokens here
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkOWFlOWZiZS04MDU1LTQyNjgtYWY3Ny0yMGFiOTk2M2NmMzciLCJlbWFpbCI6InVkdWxhOTBAb3V0bG9vay5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJjYW5kaWRhdGUiLCJmaXJzdE5hbWUiOiJVZHVsYSIsImp0aSI6IjhiYTI5M2UxLTY4NTItNGE1My05ZjJkLWY3YTY1YjY3MDk2MiIsImV4cCI6MTc3NDk3OTI2MCwiaXNzIjoidmV0dGx5LWF1dGgtc2VydmljZSIsImF1ZCI6InZldHRseS1wbGF0Zm9ybSJ9.-3H3H-CzF3_iU70rVV_yW5PxkBD58nKyTQDbOxEKunw
+@refreshToken = iR0LL67rhTJdSt9rxcQqgNrCoT+bNJ4XQE3ypkoX1lf05kC7MRJ+GdiSUuZM2NhKQ9z6d/I5Kkjnc49A3eLnVA==
+@userId = d9ae9fbe-8055-4268-af77-20ab9963cf37
 
-###
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "udula90@outlook.com",
+  "password": "Abcd_1234",
+  "role": "candidate",
+  "firstName": "Udula",
+  "lastName": "Thathsaridu"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "udula90@outlook.com",
+  "password": "Abcd_1234"
+}
+
+### Refresh Token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### Me (get current user)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
