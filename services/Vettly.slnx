@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/analytics-service/">
+    <Project Path="analytics-service/Vettly.AnalyticsService.csproj" />
+  </Folder>
+  <Folder Name="/auth-service/">
+    <Project Path="auth-service/Vettly.AuthService.csproj" />
+  </Folder>
+  <Folder Name="/candidate-service/">
+    <Project Path="candidate-service/Vettly.CandidateService.csproj" />
+  </Folder>
+  <Folder Name="/esign-service/">
+    <Project Path="esign-service/Vettly.ESignService.csproj" />
+  </Folder>
+  <Folder Name="/job-service/">
+    <Project Path="job-service/Vettly.JobService.csproj" />
+  </Folder>
+  <Folder Name="/shared/">
+    <Project Path="shared/Vettly.Shared.csproj" />
+  </Folder>
+</Solution>

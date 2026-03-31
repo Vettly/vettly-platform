@@ -1,0 +1,20 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+.vs/
+*.csproj.user
+.vscode/
+appsettings.Development.json
+# Go
+**/vendor/
+
+# Python
+**/__pycache__/
+**/venv/
+**/.env
+
+# General
+.DS_Store
+*.env
+*.suo

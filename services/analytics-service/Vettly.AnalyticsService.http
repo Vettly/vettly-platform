@@ -1,0 +1,6 @@
+@Vettly.AnalyticsService_HostAddress = http://localhost:5200
+
+GET {{Vettly.AnalyticsService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

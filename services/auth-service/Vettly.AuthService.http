@@ -1,0 +1,6 @@
+@Vettly.AuthService_HostAddress = http://localhost:5252
+
+GET {{Vettly.AuthService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
