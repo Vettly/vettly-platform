@@ -27,7 +27,7 @@ namespace Vettly.AuthService.Services
             {   
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("role", user.Role),
                 new Claim("firstName", user.FirstName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),// Unique identifier for the token used to prevenet replay attacks
             };
@@ -100,7 +100,7 @@ namespace Vettly.AuthService.Services
             return Convert.ToBase64String(bytes);
         }
 
-        private string? GetJtiFromToken(string token
+        private static string? GetJtiFromToken(string token
             )
         {
             var handler = new JwtSecurityTokenHandler();
