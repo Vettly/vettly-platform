@@ -45,6 +45,7 @@ services:
       - Jwt__AccessTokenExpirationMinutes=15
       - Jwt__RefreshTokenExpirationDays=1
       - Redis__ConnectionString=redis:6379
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
     depends_on:
       postgres:
         condition: service_healthy

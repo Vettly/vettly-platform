@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Vettly.AuthService.Services;
@@ -21,6 +21,19 @@ namespace Vettly.AuthService.Controllers
             _config = config;
         }
 
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
+            var expiryDays = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]!);
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !string.Equals(_config["ASPNETCORE_ENVIRONMENT"], "Development", StringComparison.OrdinalIgnoreCase),
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/auth",
+                MaxAge = TimeSpan.FromDays(expiryDays)
+            });
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest req)
         {
@@ -33,13 +46,14 @@ namespace Vettly.AuthService.Controllers
             var accessToken = _tokenService.GenerateAccessToken(user!);
             var refreshToken = _tokenService.GenerateRefreshToken();
             await _tokenService.StoreRefreshTokenAsync(user!.Id, refreshToken);
+            SetRefreshTokenCookie(refreshToken);
 
             return Ok(new AuthResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken,
                 Role = user.Role,
                 FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
             });
         }
@@ -55,13 +69,14 @@ namespace Vettly.AuthService.Controllers
             var accessToken = _tokenService.GenerateAccessToken(user!);
             var refreshToken = _tokenService.GenerateRefreshToken();
             await _tokenService.StoreRefreshTokenAsync(user!.Id, refreshToken);
+            SetRefreshTokenCookie(refreshToken);
 
             return Ok(new AuthResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken,
                 Role = user.Role,
                 FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
             });
         }
@@ -69,9 +84,11 @@ namespace Vettly.AuthService.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
         {
-            var isValid = await _tokenService
-                .ValidateRefreshTokenAsync(req.UserId, req.RefreshToken);
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+                return Unauthorized(new { message = "No refresh token" });
 
+            var isValid = await _tokenService.ValidateRefreshTokenAsync(req.UserId, refreshToken);
             if (!isValid)
                 return Unauthorized(new { message = "Invalid or expired refresh token" });
 
@@ -84,13 +101,14 @@ namespace Vettly.AuthService.Controllers
 
             await _tokenService.RevokeRefreshTokenAsync(req.UserId);
             await _tokenService.StoreRefreshTokenAsync(req.UserId, newRefreshToken);
+            SetRefreshTokenCookie(newRefreshToken);
 
             return Ok(new AuthResponse
             {
                 AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
                 Role = user.Role,
                 FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
             });
         }
@@ -105,6 +123,8 @@ namespace Vettly.AuthService.Controllers
             var expiryMins = int.Parse(_config["Jwt:AccessTokenExpirationMinutes"]!);
             await _tokenService.BlacklistAccessTokenAsync(token, TimeSpan.FromMinutes(expiryMins));
             await _tokenService.RevokeRefreshTokenAsync(userId);
+
+            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/api/auth" });
 
             return Ok(new { message = "Logged out successfully" });
         }
@@ -127,6 +147,5 @@ namespace Vettly.AuthService.Controllers
                 user.LastName,
             });
         }
-
     }
 }
