@@ -1,0 +1,57 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: vettly-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: vettly_auth
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vettly-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./services
+      dockerfile: auth-service/Dockerfile
+    container_name: vettly-auth
+    ports:
+      - "5050:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=vettly_auth;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - Jwt__AccessTokenExpirationMinutes=15
+      - Jwt__RefreshTokenExpirationDays=1
+      - Redis__ConnectionString=redis:6379
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
