@@ -46,6 +46,11 @@ services:
       - Jwt__RefreshTokenExpirationDays=1
       - Redis__ConnectionString=redis:6379
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - OAuth__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - OAuth__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - OAuth__GitHub__ClientId=${GITHUB_CLIENT_ID}
+      - OAuth__GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
+      - Frontend__BaseUrl=${FRONTEND_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy

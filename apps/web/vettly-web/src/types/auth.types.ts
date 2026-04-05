@@ -1,7 +1,7 @@
 export const UserRole = {
   Candidate: "candidate",
   Recruiter: "recruiter",
-};
+}as const;
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
