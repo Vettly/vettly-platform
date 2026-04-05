@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,9 +20,20 @@ var redisConfig = ConfigurationOptions.Parse(builder.Configuration["Redis:Connec
 redisConfig.AbortOnConnectFail = false;
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConfig));
 
-//JWT Authentication
+//JWT Authentication And OAuth Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme             = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme       = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.Cookie.SameSite     = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
@@ -35,6 +47,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
     };
+})
+.AddGoogle(options =>
+{
+    options.ClientId     = builder.Configuration["OAuth:Google:ClientId"]!;
+    options.ClientSecret = builder.Configuration["OAuth:Google:ClientSecret"]!;
+})
+.AddGitHub(options =>
+{
+    options.ClientId = builder.Configuration["OAuth:GitHub:ClientId"]!;
+    options.ClientSecret = builder.Configuration["OAuth:GitHub:ClientSecret"]!;
+    options.Scope.Add("user:email");
 });
 
 //Services
