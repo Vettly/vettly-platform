@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import z from "zod";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import { ROUTES } from "../../router/routes";
 import { useRegister } from "../../api/auth/auth.api";
 import { useAuthStore } from "../../stores/authStore";
@@ -126,7 +127,7 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Right panel: form ── */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-surface overflow-y-auto">
+      <div className="flex-1 relative flex flex-col justify-center items-center px-6 py-12 bg-surface overflow-y-auto">
         {/* Mobile logo */}
         <Link
           to={ROUTES.ROOT}
@@ -135,6 +136,9 @@ export default function RegisterPage() {
           Vettly
         </Link>
 
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-md space-y-7">
           <div>
             <h1 className="text-3xl font-extrabold font-headline text-primary">

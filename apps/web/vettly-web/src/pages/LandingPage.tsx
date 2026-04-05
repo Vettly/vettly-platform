@@ -1,6 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { ROUTES } from "../router/routes";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useAuthStore();
@@ -17,35 +18,36 @@ export default function LandingPage() {
   return (
     <div className="bg-surface text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed">
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-slate-50/80 backdrop-blur-xl shadow-sm">
+      <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm border-b border-outline-variant/30">
         <div className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-          <div className="text-xl font-bold tracking-tighter text-slate-900 font-headline">
+          <div className="text-xl font-bold tracking-tighter text-on-surface font-headline">
             Vettly
           </div>
           <div className="hidden md:flex items-center space-x-8">
             <a
-              className="text-slate-600 hover:text-slate-900 transition-colors font-headline tracking-tight font-semibold"
+              className="text-on-surface-variant hover:text-on-surface transition-colors font-headline tracking-tight font-semibold"
               href="#how-it-works"
             >
               How It Works
             </a>
             <a
-              className="text-slate-600 hover:text-slate-900 transition-colors font-headline tracking-tight font-semibold"
+              className="text-on-surface-variant hover:text-on-surface transition-colors font-headline tracking-tight font-semibold"
               href="#for-recruiters"
             >
               For Recruiters
             </a>
             <a
-              className="text-slate-600 hover:text-slate-900 transition-colors font-headline tracking-tight font-semibold"
+              className="text-on-surface-variant hover:text-on-surface transition-colors font-headline tracking-tight font-semibold"
               href="#for-candidates"
             >
               For Candidates
             </a>
           </div>
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <Link
               to={ROUTES.AUTH.LOGIN}
-              className="text-slate-600 hover:text-slate-900 transition-colors font-headline tracking-tight font-semibold"
+              className="text-on-surface-variant hover:text-on-surface transition-colors font-headline tracking-tight font-semibold"
             >
               Sign In
             </Link>
@@ -228,7 +230,7 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[700px]">
             {/* Step 1: AI Screening */}
-            <div className="md:col-span-8 bg-surface-container-lowest rounded-2xl p-10 smart-teal-accent flex flex-col justify-between group hover:bg-white transition-all">
+            <div className="md:col-span-8 bg-surface-container-lowest rounded-2xl p-10 smart-teal-accent flex flex-col justify-between group hover:bg-surface-container-low transition-all">
               <div>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
@@ -348,6 +350,77 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Full Pipeline Timeline */}
+        <section className="pt-32 pb-24 px-6 bg-surface-container border-t border-outline-variant/40 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-16 text-center max-w-3xl mx-auto">
+              <h2 className="text-4xl font-extrabold font-headline text-primary mb-4">
+                From Apply to Hired
+              </h2>
+              <p className="text-on-surface-variant text-lg leading-relaxed">
+                One seamless pipeline. Every step automated, audited, and fair.
+              </p>
+            </div>
+
+            {(() => {
+              const steps = [
+                { n: "01", icon: "upload_file",   label: "Apply",          desc: "Candidate submits profile and resume PDF",              tag: "Candidate", tagCls: "bg-secondary/20 text-secondary",                       iconCls: "bg-secondary/20 text-secondary" },
+                { n: "02", icon: "psychology",     label: "AI Screening",   desc: "NLP model scores resume vs job description",            tag: "AI",        tagCls: "bg-tertiary-fixed/30 text-on-tertiary-fixed",          iconCls: "bg-tertiary-fixed/20 text-on-tertiary-fixed" },
+                { n: "03", icon: "verified_user",  label: "Bias Check",     desc: "Fairness audit flags demographic correlations",         tag: "AI",        tagCls: "bg-tertiary-fixed/30 text-on-tertiary-fixed",          iconCls: "bg-tertiary-fixed/20 text-on-tertiary-fixed" },
+                { n: "04", icon: "hub",            label: "Smart Matching", desc: "Candidates ranked by semantic fit score",               tag: "AI",        tagCls: "bg-tertiary-fixed/30 text-on-tertiary-fixed",          iconCls: "bg-tertiary-fixed/20 text-on-tertiary-fixed" },
+                { n: "05", icon: "view_kanban",    label: "Review",         desc: "Recruiter reviews ranked pipeline and shortlists",      tag: "Recruiter", tagCls: "bg-primary-container text-on-primary-container",       iconCls: "bg-primary-container text-on-primary-container" },
+                { n: "06", icon: "draw",           label: "Offer & E-Sign", desc: "Offer letter generated, candidate signs on any device", tag: "Both",      tagCls: "bg-surface-container-high text-on-surface-variant",   iconCls: "bg-surface-container-high text-on-surface-variant" },
+                { n: "07", icon: "celebration",    label: "Hired",          desc: "Analytics updated with hire outcome",                   tag: "Done",      tagCls: "bg-secondary-container text-on-secondary-container",  iconCls: "bg-secondary-container text-on-secondary-container" },
+              ];
+
+              return (
+                <div className="relative">
+                  {/* Desktop connector line — sits at vertical center of the 44px icon badges */}
+                  <div className="hidden lg:block absolute top-7 left-0 right-0 h-0.5 bg-linear-to-r from-secondary/20 via-secondary to-secondary/20 z-0" />
+
+                  <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 lg:gap-2">
+                    {steps.map((s, i) => (
+                      <div key={s.n} className="relative flex lg:flex-col items-start lg:items-center gap-4 lg:gap-0 lg:text-center pb-8 lg:pb-0">
+                        {/* Mobile left connector */}
+                        {i < steps.length - 1 && (
+                          <div className="lg:hidden absolute left-7 top-16 bottom-0 w-0.5 bg-secondary/30" />
+                        )}
+
+                        {/* Icon badge — outer ring uses solid surface to mask the connector line */}
+                        <div className="relative z-10 shrink-0 p-1.5 rounded-full bg-surface-container">
+                          <div className={`w-11 h-11 rounded-full flex items-center justify-center ${s.iconCls}`}>
+                            <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="lg:mt-5 lg:px-1 flex-1">
+                          <div className="text-[10px] font-bold font-label tracking-widest text-on-surface-variant uppercase mb-1">
+                            {s.n}
+                          </div>
+                          <div className="font-headline font-bold text-sm text-on-surface mb-1.5">
+                            {s.label}
+                          </div>
+                          <div className="text-xs font-body text-on-surface-variant leading-relaxed mb-2 hidden lg:block">
+                            {s.desc}
+                          </div>
+                          <span className={`inline-flex text-[10px] font-bold font-label uppercase tracking-wider px-2 py-0.5 rounded-full ${s.tagCls}`}>
+                            {s.tag}
+                          </span>
+                          {/* Mobile description */}
+                          <p className="lg:hidden text-xs font-body text-on-surface-variant mt-1 leading-relaxed">
+                            {s.desc}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
 
@@ -605,25 +678,25 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-100 w-full py-12 px-6 mt-auto">
+      <footer className="bg-surface-container-low w-full py-12 px-6 mt-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto">
           <div className="col-span-1">
-            <div className="text-lg font-black text-slate-900 font-headline mb-2">
+            <div className="text-lg font-black text-on-surface font-headline mb-2">
               Vettly
             </div>
-            <p className="text-slate-500 text-sm leading-relaxed">
+            <p className="text-on-surface-variant text-sm leading-relaxed">
               Smart recruitment platform with AI screening, bias detection, and
               e-sign, built for the modern hiring team.
             </p>
           </div>
           <div>
-            <div className="text-slate-900 text-sm uppercase tracking-widest font-bold mb-6">
+            <div className="text-on-surface text-sm uppercase tracking-widest font-bold mb-6">
               Platform
             </div>
             <ul className="space-y-4">
               <li>
                 <a
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   href="#for-recruiters"
                 >
                   For Recruiters
@@ -631,7 +704,7 @@ export default function LandingPage() {
               </li>
               <li>
                 <a
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   href="#for-candidates"
                 >
                   For Candidates
@@ -639,7 +712,7 @@ export default function LandingPage() {
               </li>
               <li>
                 <a
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   href="#how-it-works"
                 >
                   How It Works
@@ -648,13 +721,13 @@ export default function LandingPage() {
             </ul>
           </div>
           <div>
-            <div className="text-slate-900 text-sm uppercase tracking-widest font-bold mb-6">
+            <div className="text-on-surface text-sm uppercase tracking-widest font-bold mb-6">
               Legal
             </div>
             <ul className="space-y-4">
               <li>
                 <a
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   href="#"
                 >
                   Privacy Policy
@@ -662,7 +735,7 @@ export default function LandingPage() {
               </li>
               <li>
                 <a
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   href="#"
                 >
                   Terms of Service
@@ -671,13 +744,13 @@ export default function LandingPage() {
             </ul>
           </div>
           <div>
-            <div className="text-slate-900 text-sm uppercase tracking-widest font-bold mb-6">
+            <div className="text-on-surface text-sm uppercase tracking-widest font-bold mb-6">
               Account
             </div>
             <ul className="space-y-4">
               <li>
                 <Link
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   to={ROUTES.AUTH.LOGIN}
                 >
                   Sign In
@@ -685,7 +758,7 @@ export default function LandingPage() {
               </li>
               <li>
                 <Link
-                  className="text-slate-500 hover:text-secondary transition-colors text-sm"
+                  className="text-on-surface-variant hover:text-secondary transition-colors text-sm"
                   to={ROUTES.AUTH.REGISTER}
                 >
                   Get Started
@@ -694,15 +767,15 @@ export default function LandingPage() {
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 flex justify-between items-center">
-          <p className="text-slate-500 text-sm">
+        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-outline-variant flex justify-between items-center">
+          <p className="text-on-surface-variant text-sm">
             © {new Date().getFullYear()} Vettly. Hire smarter. Get hired faster.
           </p>
           <div className="flex gap-4">
-            <span className="material-symbols-outlined text-slate-400">
+            <span className="material-symbols-outlined text-on-surface-variant">
               language
             </span>
-            <span className="material-symbols-outlined text-slate-400">
+            <span className="material-symbols-outlined text-on-surface-variant">
               share
             </span>
           </div>
