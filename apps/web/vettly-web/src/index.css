@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Colors */
@@ -65,8 +66,8 @@
 @layer base {
   body {
     font-family: "Inter", sans-serif;
-    background-color: #f7f9fb;
-    color: #191c1e;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
   }
   #root {
     width: 100%;
@@ -78,10 +79,63 @@
   }
 }
 
+:root.dark {
+  /* Surfaces — deep navy */
+  --color-surface:                   #0e1117;
+  --color-surface-dim:               #0e1117;
+  --color-surface-bright:            #1e2328;
+  --color-surface-container-lowest:  #090c11;
+  --color-surface-container-low:     #161b21;
+  --color-surface-container:         #1a1f26;
+  --color-surface-container-high:    #242a31;
+  --color-surface-container-highest: #2e343b;
+  --color-surface-variant:           #3c4249;
+  --color-background:                #0e1117;
+
+  /* On-surface — light */
+  --color-on-surface:         #dfe3e8;
+  --color-on-surface-variant: #a0aab3;
+  --color-on-background:      #dfe3e8;
+
+  /* Primary — white on dark */
+  --color-primary:              #ffffff;
+  --color-on-primary:           #0e1117;
+  --color-primary-container:    #1e2c42;
+  --color-on-primary-container: #bcc7de;
+  --color-primary-fixed:        #1e2c42;
+  --color-primary-fixed-dim:    #7d8fa6;
+  --color-inverse-primary:      #000000;
+
+  /* Secondary — Smart Teal stays vibrant */
+  --color-secondary:              #4ec7bc;
+  --color-on-secondary:           #00201d;
+  --color-secondary-container:    #004d47;
+  --color-on-secondary-container: #86f2e4;
+  --color-secondary-fixed:        #89f5e7;
+  --color-secondary-fixed-dim:    #6bd8cb;
+
+  /* Outline */
+  --color-outline:         #5a6470;
+  --color-outline-variant: #3a4149;
+
+  /* Error */
+  --color-error:              #ffb4ab;
+  --color-on-error:           #690005;
+  --color-error-container:    #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* Inverse */
+  --color-inverse-surface:    #dfe3e8;
+  --color-inverse-on-surface: #2d3133;
+}
+
 @layer utilities {
   .glass-panel {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
+  }
+  .dark .glass-panel {
+    background: rgba(26, 31, 38, 0.85);
   }
   .editorial-gradient {
     background: linear-gradient(135deg, #111c2d 0%, #79849a 100%);
