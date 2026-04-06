@@ -5,6 +5,8 @@ import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import OAuthCallbackPage from "../pages/auth/OAuthCallbackPage";
+import UnauthorizedPage from "../pages/UnauthorizedPage";
+import NotFoundPage from "../pages/NotFoundPage";
 import { useLogout } from "../api/auth/auth.api";
 import { ROUTES } from "./routes";
 
@@ -75,6 +77,10 @@ export const router = createBrowserRouter([
   },
   {
     path: ROUTES.UNAUTHORIZED,
-    element: <div>Unauthorized</div>,
+    element: <UnauthorizedPage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
