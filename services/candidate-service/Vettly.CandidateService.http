@@ -1,6 +1,174 @@
-@Vettly.CandidateService_HostAddress = http://localhost:5013
+@baseUrl = http://localhost:5051
+@contentType = application/json
 
-GET {{Vettly.CandidateService_HostAddress}}/weatherforecast/
-Accept: application/json
+# Paste access token from auth service after login
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkOWFlOWZiZS04MDU1LTQyNjgtYWY3Ny0yMGFiOTk2M2NmMzciLCJlbWFpbCI6InVkdWxhOTBAb3V0bG9vay5jb20iLCJyb2xlIjoiY2FuZGlkYXRlIiwiZmlyc3ROYW1lIjoiVWR1bGEiLCJqdGkiOiJjZGU5NzU5Ni1kYTFjLTQ0NTYtYmEzOC0zMjViMDljMzkxZTQiLCJleHAiOjE3NzU2NTIzNjMsImlzcyI6InZldHRseS1hdXRoLXNlcnZpY2UiLCJhdWQiOiJ2ZXR0bHktcGxhdGZvcm0ifQ.IZcQlh-LahowP4VVKQywWalDjpxu5Ev2ok6FdtakrM4
 
-###
+# ── PROFILE ───────────────────────────────────────────────────
+
+### Get Profile
+GET {{baseUrl}}/api/candidates/profile
+Authorization: Bearer {{accessToken}}
+
+### Create Profile
+POST {{baseUrl}}/api/candidates/profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "headline": "Software Engineer",
+  "bio": "Passionate about building great products.",
+  "location": "Colombo, Sri Lanka",
+  "phone": "+94771234567",
+  "linkedInUrl": "https://linkedin.com/in/example",
+  "githubUrl": "https://github.com/example",
+  "portfolioUrl": ""
+}
+
+### Update Profile
+PUT {{baseUrl}}/api/candidates/profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "headline": "Senior Software Engineer",
+  "bio": "Updated bio.",
+  "location": "Colombo, Sri Lanka",
+  "phone": "+94771234567",
+  "linkedInUrl": "https://linkedin.com/in/example",
+  "githubUrl": "https://github.com/example",
+  "portfolioUrl": "https://example.com"
+}
+
+### Upload Avatar (multipart/form-data — use a REST client or curl)
+# POST {{baseUrl}}/api/candidates/profile/avatar
+# Authorization: Bearer {{accessToken}}
+# Content-Type: multipart/form-data
+# file: <select file>
+
+# ── EXPERIENCE ────────────────────────────────────────────────
+
+### Add Experience
+POST {{baseUrl}}/api/candidates/experience
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Software Engineer",
+  "company": "Acme Corp",
+  "location": "Remote",
+  "startDate": "2022-01-01",
+  "endDate": null,
+  "isCurrent": true,
+  "description": "Built scalable backend services."
+}
+
+### Update Experience
+PUT {{baseUrl}}/api/candidates/experience/4711c5b8-b3f0-4885-bd56-7c45c0aff09c
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Senior Software Engineer",
+  "company": "Acme Corp",
+  "location": "Remote",
+  "startDate": "2022-01-01",
+  "endDate": "2024-01-01",
+  "isCurrent": false,
+  "description": "Led backend architecture."
+}
+
+### Delete Experience
+DELETE {{baseUrl}}/api/candidates/experience/4711c5b8-b3f0-4885-bd56-7c45c0aff09c
+Authorization: Bearer {{accessToken}}
+
+# ── EDUCATION ─────────────────────────────────────────────────
+
+### Add Education
+POST {{baseUrl}}/api/candidates/education
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "institution": "University of Moratuwa",
+  "degree": "BSc",
+  "fieldOfStudy": "Computer Science",
+  "startDate": "2018-09-01",
+  "endDate": "2022-06-01",
+  "isCurrent": false
+}
+
+### Update Education
+PUT {{baseUrl}}/api/candidates/education/600268b7-fe94-4e63-8354-1b2067eaf7bb
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "institution": "University of Moratuwa",
+  "degree": "BSc (Hons)",
+  "fieldOfStudy": "Computer Science & Engineering",
+  "startDate": "2018-09-01",
+  "endDate": "2022-06-01",
+  "isCurrent": false
+}
+
+### Delete Education
+DELETE {{baseUrl}}/api/candidates/education/600268b7-fe94-4e63-8354-1b2067eaf7bb
+Authorization: Bearer {{accessToken}}
+
+# ── SKILLS ────────────────────────────────────────────────────
+
+### Add Skill
+POST {{baseUrl}}/api/candidates/skills
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "C#",
+  "level": "Advanced"
+}
+
+### Delete Skill
+DELETE {{baseUrl}}/api/candidates/skills/65cb8b44-5102-483f-81e6-efcb89447964
+Authorization: Bearer {{accessToken}}
+
+# ── RESUME ────────────────────────────────────────────────────
+
+### Get Resumes
+GET {{baseUrl}}/api/candidates/resume
+Authorization: Bearer {{accessToken}}
+
+### Upload Resume (multipart/form-data — use a REST client or curl)
+# POST {{baseUrl}}/api/candidates/resume
+# Authorization: Bearer {{accessToken}}
+# Content-Type: multipart/form-data
+# file: <select PDF file>
+
+### Set Primary Resume
+PATCH {{baseUrl}}/api/candidates/resume/00000000-0000-0000-0000-000000000000/primary
+Authorization: Bearer {{accessToken}}
+
+### Delete Resume
+DELETE {{baseUrl}}/api/candidates/resume/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+# ── APPLICATIONS ──────────────────────────────────────────────
+
+### Apply to Job
+POST {{baseUrl}}/api/candidates/applications
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "jobId": "00000000-0000-0000-0000-000000000000",
+  "resumeId": "00000000-0000-0000-0000-000000000000",
+  "coverLetter": "I am very interested in this role..."
+}
+
+### Get My Applications
+GET {{baseUrl}}/api/candidates/applications
+Authorization: Bearer {{accessToken}}
+
+### Get Application by ID
+GET {{baseUrl}}/api/candidates/applications/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
