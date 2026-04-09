@@ -57,6 +57,28 @@ services:
       redis:
         condition: service_healthy
 
+  candidate-service:
+    build:
+      context: ./services
+      dockerfile: candidate-service/Dockerfile
+    container_name: vettly-candidate
+    ports:
+      - "5051:8080"
+    environment:
+      - ConnectionStrings__CandidateDb=Host=postgres;Database=vettly_candidate;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - R2__AccountId=${R2_ACCOUNT_ID}
+      - R2__AccessKey=${R2_ACCESS_KEY}
+      - R2__SecretKey=${R2_SECRET_KEY}
+      - R2__BucketName=${R2_BUCKET_NAME}
+      - R2__PublicUrl=${R2_PUBLIC_URL}
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
