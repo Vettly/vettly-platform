@@ -75,7 +75,7 @@ namespace Vettly.CandidateService.Services
             return MapToResponse(profile);
         }
 
-        // ── EXPERIENCE ────────────────────────────────
+       
         public async Task<ExperienceResponse> AddExperienceAsync(
             Guid userId, ExperienceRequest req)
         {
@@ -130,7 +130,7 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-        // ── EDUCATION ─────────────────────────────────
+       
         public async Task<EducationResponse> AddEducationAsync(
             Guid userId, EducationRequest req)
         {
@@ -187,7 +187,7 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-        // ── SKILLS ────────────────────────────────────
+      
         public async Task<SkillResponse> AddSkillAsync(
             Guid userId, SkillRequest req)
         {
@@ -218,7 +218,7 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-        // ── RESUME ────────────────────────────────────
+       
         public async Task<ResumeResponse> UploadResumeAsync(
             Guid userId, IFormFile file)
         {
@@ -281,7 +281,7 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-        // ── HELPERS ───────────────────────────────────
+       
         private async Task<CandidateProfile> GetOrThrowAsync(Guid userId)
         {
             var profile = await _db.Profiles
@@ -291,67 +291,67 @@ namespace Vettly.CandidateService.Services
             return profile;
         }
 
-        private static ProfileResponse MapToResponse(CandidateProfile p) => new()
+        private static ProfileResponse MapToResponse(CandidateProfile profile) => new()
         {
-            Id = p.Id,
-            UserId = p.UserId,
-            FirstName = p.FirstName,
-            LastName = p.LastName,
-            Email = p.Email,
-            Headline = p.Headline,
-            Bio = p.Bio,
-            Phone = p.Phone,
-            Location = p.Location,
-            LinkedInUrl = p.LinkedInUrl,
-            GitHubUrl = p.GitHubUrl,
-            PortfolioUrl = p.PortfolioUrl,
-            AvatarUrl = p.AvatarUrl,
-            CreatedAt = p.CreatedAt,
-            UpdatedAt = p.UpdatedAt,
-            Experiences = p.Experiences.Select(MapExperience).ToList(),
-            Educations = p.Educations.Select(MapEducation).ToList(),
-            Skills = p.Skills.Select(MapSkill).ToList(),
-            Resumes = p.Resumes.Select(MapResume).ToList(),
+            Id = profile.Id,
+            UserId = profile.UserId,
+            FirstName = profile.FirstName,
+            LastName = profile.LastName,
+            Email = profile.Email,
+            Headline = profile.Headline,
+            Bio = profile.Bio,
+            Phone = profile.Phone,
+            Location = profile.Location,
+            LinkedInUrl = profile.LinkedInUrl,
+            GitHubUrl = profile.GitHubUrl,
+            PortfolioUrl = profile.PortfolioUrl,
+            AvatarUrl = profile.AvatarUrl,
+            CreatedAt = profile.CreatedAt,
+            UpdatedAt = profile.UpdatedAt,
+            Experiences = profile.Experiences.Select(MapExperience).ToList(),
+            Educations = profile.Educations.Select(MapEducation).ToList(),
+            Skills = profile.Skills.Select(MapSkill).ToList(),
+            Resumes = profile.Resumes.Select(MapResume).ToList(),
         };
 
-        private static ExperienceResponse MapExperience(Experience e) => new()
+        private static ExperienceResponse MapExperience(Experience experience) => new()
         {
-            Id = e.Id,
-            Company = e.Company,
-            Role = e.Role,
-            StartDate = e.StartDate,
-            EndDate = e.EndDate,
-            Description = e.Description,
-            CreatedAt = e.CreatedAt,
+            Id = experience.Id,
+            Company = experience.Company,
+            Role = experience.Role,
+            StartDate = experience.StartDate,
+            EndDate = experience.EndDate,
+            Description = experience.Description,
+            CreatedAt = experience.CreatedAt,
         };
 
-        private static EducationResponse MapEducation(Education e) => new()
+        private static EducationResponse MapEducation(Education education) => new()
         {
-            Id = e.Id,
-            Institution = e.Institution,
-            Degree = e.Degree,
-            Field = e.Field,
-            StartDate = e.StartDate,
-            EndDate = e.EndDate,
-            Gpa = e.Gpa,
-            CreatedAt = e.CreatedAt,
+            Id = education.Id,
+            Institution = education.Institution,
+            Degree = education.Degree,
+            Field = education.Field,
+            StartDate = education.StartDate,
+            EndDate = education.EndDate,
+            Gpa = education.Gpa,
+            CreatedAt = education.CreatedAt,
         };
 
-        private static SkillResponse MapSkill(Skill s) => new()
+        private static SkillResponse MapSkill(Skill skill) => new()
         {
-            Id = s.Id,
-            Name = s.Name,
-            Level = s.Level,
-            CreatedAt = s.CreatedAt,
+            Id = skill.Id,
+            Name = skill.Name,
+            Level = skill.Level,
+            CreatedAt = skill.CreatedAt,
         };
 
-        private static ResumeResponse MapResume(Resume r) => new()
+        private static ResumeResponse MapResume(Resume resume) => new()
         {
-            Id = r.Id,
-            FileName = r.FileName,
-            S3Url = r.S3Url,
-            IsPrimary = r.IsPrimary,
-            UploadedAt = r.UploadedAt,
+            Id = resume.Id,
+            FileName = resume.FileName,
+            S3Url = resume.S3Url,
+            IsPrimary = resume.IsPrimary,
+            UploadedAt = resume.UploadedAt,
         };
         public async Task<string?> UploadAvatarAsync(Guid userId, IFormFile file)
         {
