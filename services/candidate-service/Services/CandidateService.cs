@@ -130,7 +130,16 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-       
+        public async Task<List<ExperienceResponse>> GetExperiencesAsync(Guid userId)
+        {
+            var profile = await GetOrThrowAsync(userId);
+            var experiences = await _db.Experiences
+                .Where(experience => experience.ProfileId == profile.Id)
+                .OrderByDescending(experience => experience.StartDate)
+                .ToListAsync();
+            return experiences.Select(MapExperience).ToList();
+        }
+
         public async Task<EducationResponse> AddEducationAsync(
             Guid userId, EducationRequest req)
         {
@@ -187,7 +196,16 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-      
+        public async Task<List<EducationResponse>> GetEducationsAsync(Guid userId)
+        {
+            var profile = await GetOrThrowAsync(userId);
+            var educations = await _db.Educations
+                .Where(education => education.ProfileID == profile.Id)
+                .OrderByDescending(education => education.StartDate)
+                .ToListAsync();
+            return educations.Select(MapEducation).ToList();
+        }
+
         public async Task<SkillResponse> AddSkillAsync(
             Guid userId, SkillRequest req)
         {
@@ -218,7 +236,16 @@ namespace Vettly.CandidateService.Services
             return true;
         }
 
-       
+        public async Task<List<SkillResponse>> GetSkillsAsync(Guid userId)
+        {
+            var profile = await GetOrThrowAsync(userId);
+            var skills = await _db.Skills
+                .Where(skills => skills.ProfileId == profile.Id)
+                .OrderBy(skills => skills.Name)
+                .ToListAsync();
+            return skills.Select(MapSkill).ToList();
+        }
+
         public async Task<ResumeResponse> UploadResumeAsync(
             Guid userId, IFormFile file)
         {

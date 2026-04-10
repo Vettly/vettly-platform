@@ -16,6 +16,7 @@ namespace Vettly.CandidateService.Services
             Guid experienceId, ExperienceRequest req);
         Task<bool> DeleteExperienceAsync(Guid userId,
             Guid experienceId);
+        Task<List<ExperienceResponse>> GetExperiencesAsync(Guid userId);
 
         Task<EducationResponse> AddEducationAsync(Guid userId,
             EducationRequest req);
@@ -23,9 +24,11 @@ namespace Vettly.CandidateService.Services
             Guid educationId, EducationRequest req);
         Task<bool> DeleteEducationAsync(Guid userId,
             Guid educationId);
+        Task<List<EducationResponse>> GetEducationsAsync(Guid userId);
 
         Task<SkillResponse> AddSkillAsync(Guid userId, SkillRequest req);
         Task<bool> DeleteSkillAsync(Guid userId, Guid skillId);
+        Task<List<SkillResponse>> GetSkillsAsync(Guid userId);
 
         Task<ResumeResponse> UploadResumeAsync(Guid userId, IFormFile file);
         Task<List<ResumeResponse>> GetResumesAsync(Guid userId);
