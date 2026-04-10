@@ -77,6 +77,14 @@ namespace Vettly.CandidateService.Controllers
         }
 
        
+        [HttpGet("experience")]
+        public async Task<IActionResult> GetExperiences()
+        {
+            var userId = User.GetUserID();
+            var result = await _candidateService.GetExperiencesAsync(userId);
+            return Ok(result);
+        }
+
         [HttpPost("experience")]
         public async Task<IActionResult> AddExperience(
             [FromBody] ExperienceRequest req)
@@ -108,6 +116,14 @@ namespace Vettly.CandidateService.Controllers
         }
 
        
+        [HttpGet("education")]
+        public async Task<IActionResult> GetEducations()
+        {
+            var userId = User.GetUserID();
+            var result = await _candidateService.GetEducationsAsync(userId);
+            return Ok(result);
+        }
+
         [HttpPost("education")]
         public async Task<IActionResult> AddEducation(
             [FromBody] EducationRequest req)
@@ -139,6 +155,14 @@ namespace Vettly.CandidateService.Controllers
         }
 
        
+        [HttpGet("skills")]
+        public async Task<IActionResult> GetSkills()
+        {
+            var userId = User.GetUserID();
+            var result = await _candidateService.GetSkillsAsync(userId);
+            return Ok(result);
+        }
+
         [HttpPost("skills")]
         public async Task<IActionResult> AddSkill([FromBody] SkillRequest req)
         {
