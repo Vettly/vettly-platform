@@ -70,6 +70,25 @@ services:
       - Jwt__Issuer=vettly-auth-service
       - Jwt__Audience=vettly-platform
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - OrganizationService__BaseUrl=http://organization-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      organization-service:
+        condition: service_started
+  organization-service:
+    build:
+      context: ./services
+      dockerfile: organization-service/Dockerfile
+    container_name: vettly-organization
+    ports:
+      - "5053:8080"
+    environment:
+      - ConnectionStrings__OrganizationDb=Host=postgres;Database=vettly_organization;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Vettly.OrganizationService": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:52217;http://localhost:52218"
+    }
+  }
+}

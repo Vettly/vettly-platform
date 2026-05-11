@@ -7,6 +7,7 @@ export interface JobSkill {
 export interface JobSummary {
   id: string;
   title: string;
+  companyName: string | null;
   location: string | null;
   jobType: string;
   experienceLevel: string | null;
@@ -21,5 +22,6 @@ export interface JobSummary {
 export interface Job extends JobSummary {
   description: string;
   recruiterId: string;
+  organizationId: string | null;
   updatedAt: string;
 }

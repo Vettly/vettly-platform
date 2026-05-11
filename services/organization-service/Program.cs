@@ -2,19 +2,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Vettly.JobService.Data;
-using Vettly.JobService.Services;
+using Vettly.OrganizationService.Data;
+using Vettly.OrganizationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// PostgreSQL
-builder.Services.AddDbContext<JobDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<OrganizationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("OrganizationDb")));
 
-// JWT
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -32,7 +31,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? [];
@@ -48,32 +46,23 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Services
-builder.Services.AddHttpClient<OrganizationClient>(client =>
-{
-    var baseUrl = builder.Configuration["OrganizationService:BaseUrl"]
-        ?? throw new InvalidOperationException("OrganizationService:BaseUrl is not configured");
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddScoped<IJobService, JobService>();
-builder.Services.AddScoped<IPipelineService, PipelineService>();
-
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// auto migrate
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider
-        .GetRequiredService<JobDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<OrganizationDbContext>();
     db.Database.Migrate();
 }
 
-app.MapOpenApi();
 app.UseCors("VettlyWeb");
 app.UseAuthentication();
 app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi();
+
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

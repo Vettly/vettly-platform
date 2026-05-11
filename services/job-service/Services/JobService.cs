@@ -8,7 +8,7 @@ namespace Vettly.JobService.Services;
 public interface IJobService
 {
     Task<JobResponse>              CreateJobAsync(Guid recruiterId,
-        CreateJobRequest req);
+        CreateJobRequest req, string bearerToken);
     Task<JobResponse?>             GetJobAsync(Guid jobId);
     Task<List<JobSummaryResponse>> GetAllOpenJobsAsync(
         string? search, string? jobType, string? experienceLevel);
@@ -23,19 +23,27 @@ public interface IJobService
 
 public class JobService : IJobService
 {
-    private readonly JobDbContext _db;
+    private readonly JobDbContext      _db;
+    private readonly OrganizationClient _orgClient;
 
-    public JobService(JobDbContext db)
+    public JobService(JobDbContext db, OrganizationClient orgClient)
     {
-        _db = db;
+        _db        = db;
+        _orgClient = orgClient;
     }
 
     public async Task<JobResponse> CreateJobAsync(
-        Guid recruiterId, CreateJobRequest req)
+        Guid recruiterId, CreateJobRequest req, string bearerToken)
     {
+        var org = await _orgClient.GetByRecruiterAsync(bearerToken)
+            ?? throw new InvalidOperationException(
+                "Recruiter must belong to an organization before posting jobs");
+
         var job = new JobPosting
         {
             RecruiterId     = recruiterId,
+            OrganizationId  = org.Id,
+            CompanyName     = org.Name,
             Title           = req.Title,
             Description     = req.Description,
             Location        = req.Location,
@@ -184,6 +192,8 @@ public class JobService : IJobService
     {
         Id              = j.Id,
         RecruiterId     = j.RecruiterId,
+        OrganizationId  = j.OrganizationId,
+        CompanyName     = j.CompanyName,
         Title           = j.Title,
         Description     = j.Description,
         Location        = j.Location,
@@ -205,6 +215,7 @@ public class JobService : IJobService
     private static JobSummaryResponse MapToSummary(JobPosting j) => new()
     {
         Id              = j.Id,
+        CompanyName     = j.CompanyName,
         Title           = j.Title,
         Location        = j.Location,
         JobType         = j.JobType,
