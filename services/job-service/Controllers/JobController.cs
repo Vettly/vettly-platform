@@ -54,13 +54,21 @@ public class JobController : ControllerBase
     public async Task<IActionResult> CreateJob(
         [FromBody] CreateJobRequest req)
     {
-        // only recruiters can create jobs
         if (User.GetRole() != "recruiter")
             return Forbid();
 
-        var recruiterId = User.GetUserId();
-        var job         = await _jobService.CreateJobAsync(recruiterId, req);
-        return CreatedAtAction(nameof(GetJob), new { id = job.Id }, job);
+        var recruiterId  = User.GetUserId();
+        var bearerToken  = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+
+        try
+        {
+            var job = await _jobService.CreateJobAsync(recruiterId, req, bearerToken);
+            return CreatedAtAction(nameof(GetJob), new { id = job.Id }, job);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]

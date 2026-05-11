@@ -19,7 +19,10 @@ public class JobPosting
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<JobSkill> Skills { get; set; } = [];
+    public Guid?   OrganizationId { get; set; }
+    public string? CompanyName    { get; set; }
+
+    public ICollection<JobSkill>      Skills         { get; set; } = [];
     public ICollection<PipelineStage> PipelineStages { get; set; } = [];
 
 }

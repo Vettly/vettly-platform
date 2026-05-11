@@ -49,6 +49,12 @@ builder.Services.AddCors(options =>
 });
 
 // Services
+builder.Services.AddHttpClient<OrganizationClient>(client =>
+{
+    var baseUrl = builder.Configuration["OrganizationService:BaseUrl"]
+        ?? throw new InvalidOperationException("OrganizationService:BaseUrl is not configured");
+    client.BaseAddress = new Uri(baseUrl);
+});
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<IPipelineService, PipelineService>();
 

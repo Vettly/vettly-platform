@@ -21,6 +21,8 @@ public class JobDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.RecruiterId);
             entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.OrganizationId);
+            entity.Property(e => e.CompanyName).HasMaxLength(200);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Description).IsRequired();
             entity.Property(e => e.JobType).IsRequired().HasMaxLength(20);
