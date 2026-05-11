@@ -6,15 +6,8 @@ import {
   useDeleteResume,
   useSetPrimaryResume,
 } from "../../../api/candidate/candidate.api";
+import { formatDate } from "../../../utils/format";
 import type { Resume } from "../../../types/candidate.types";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export function ResumeSection() {
   const { data: resumes = [], isLoading } = useResumes();

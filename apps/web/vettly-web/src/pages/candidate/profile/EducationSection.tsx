@@ -10,6 +10,7 @@ import {
   useDeleteEducation,
 } from "../../../api/candidate/candidate.api";
 import { SectionCard } from "../components/SectionCard";
+import { formatMonthYear, isoToMonth, monthToIso } from "../../../utils/format";
 import type { Education } from "../../../types/candidate.types";
 
 const eduSchema = z.object({
@@ -22,21 +23,6 @@ const eduSchema = z.object({
 });
 
 type EduForm = z.infer<typeof eduSchema>;
-
-function formatMonthYear(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function isoToMonth(iso: string) {
-  return iso.slice(0, 7);
-}
-
-function monthToIso(month: string) {
-  return month ? `${month}-01` : "";
-}
 
 function EducationForm({
   initial,

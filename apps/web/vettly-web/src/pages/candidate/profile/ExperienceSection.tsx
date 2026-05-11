@@ -10,6 +10,7 @@ import {
   useDeleteExperience,
 } from "../../../api/candidate/candidate.api";
 import { SectionCard } from "../components/SectionCard";
+import { formatMonthYear, isoToMonth, monthToIso } from "../../../utils/format";
 import type { Experience } from "../../../types/candidate.types";
 
 const expSchema = z.object({
@@ -21,21 +22,6 @@ const expSchema = z.object({
 });
 
 type ExpForm = z.infer<typeof expSchema>;
-
-function formatMonthYear(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function isoToMonth(iso: string) {
-  return iso.slice(0, 7);
-}
-
-function monthToIso(month: string) {
-  return month ? `${month}-01` : "";
-}
 
 function ExperienceForm({
   initial,
