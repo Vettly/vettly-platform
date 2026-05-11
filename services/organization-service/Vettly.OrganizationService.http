@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:5053
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ZTUyMmNkMC0xYmY4LTRlNjMtYjM1Mi0zMjI0MjBjOTI3MWUiLCJlbWFpbCI6InVkdWxhOTFAb3V0bG9vay5jb20iLCJyb2xlIjoicmVjcnVpdGVyIiwiZmlyc3ROYW1lIjoiVWR1bGEiLCJqdGkiOiI1ZDNjODc1Ny0xNDJmLTRkY2QtOTU4OS0wNzNlZGZmYjdlYjEiLCJleHAiOjE3Nzg1MDY4MDYsImlzcyI6InZldHRseS1hdXRoLXNlcnZpY2UiLCJhdWQiOiJ2ZXR0bHktcGxhdGZvcm0ifQ.wPfCYTguzIMTYKkuPR8hu8qtm7l6HDaFLgHj_UaH0s0
+
+### Create organization (recruiter only — do this before posting jobs)
+POST {{baseUrl}}/api/organizations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Acme Corp",
+  "industry": "Technology",
+  "description": "We build great software.",
+  "website": "https://acme.com"
+}
+
+###
+
+### Get my organization (recruiter only)
+GET {{baseUrl}}/api/organizations/mine
+Authorization: Bearer {{token}}
+
+###
+
+### Get organization by ID (public)
+GET {{baseUrl}}/api/organizations/<paste_org_id_here>
+
+###

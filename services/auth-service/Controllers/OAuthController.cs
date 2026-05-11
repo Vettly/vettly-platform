@@ -96,14 +96,14 @@ public class OAuthController : ControllerBase
         var refreshToken = _tokenService.GenerateRefreshToken();
         await _tokenService.StoreRefreshTokenAsync(user.Id, refreshToken);
 
+        var expiryDays = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]!);
         Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure   = Request.IsHttps,
-            SameSite = SameSiteMode.None,
+            Secure   = !string.Equals(_config["ASPNETCORE_ENVIRONMENT"], "Development", StringComparison.OrdinalIgnoreCase),
+            SameSite = SameSiteMode.Strict,
             Path     = "/api/auth",
-            Expires  = DateTime.UtcNow.AddDays(
-                int.Parse(_config["Jwt:RefreshTokenExpirationDays"]!))
+            MaxAge   = TimeSpan.FromDays(expiryDays),
         });
 
         return Redirect($"{frontendUrl}/auth/callback?token={accessToken}&isNewUser={isNewUser}");

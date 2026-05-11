@@ -3,6 +3,25 @@ import { useAuthStore } from "../stores/authStore";
 import { AUTH_ENDPOINTS } from "./auth/endpoints";
 import { ROUTES } from "../router/routes";
 
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshAccessToken(userId: string): Promise<string> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = axios
+    .post(
+      `${import.meta.env.VITE_AUTH_API_URL}${AUTH_ENDPOINTS.REFRESH}`,
+      { userId },
+      { withCredentials: true }
+    )
+    .then((res) => res.data.accessToken)
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
 export function createClient(baseURL: string): AxiosInstance {
   const client = axios.create({
     baseURL,
@@ -33,13 +52,7 @@ export function createClient(baseURL: string): AxiosInstance {
         }
 
         try {
-          const response = await axios.post(
-            `${import.meta.env.VITE_AUTH_API_URL}${AUTH_ENDPOINTS.REFRESH}`,
-            { userId: user.id },
-            { withCredentials: true }
-          );
-
-          const newAccessToken = response.data.accessToken;
+          const newAccessToken = await refreshAccessToken(user.id);
           setAccessToken(newAccessToken);
 
           original.headers.Authorization = `Bearer ${newAccessToken}`;

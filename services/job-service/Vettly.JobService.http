@@ -1,6 +1,109 @@
-@Vettly.JobService_HostAddress = http://localhost:5086
+@baseUrl = http://localhost:5052
+@orgBaseUrl = http://localhost:5053
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ZTUyMmNkMC0xYmY4LTRlNjMtYjM1Mi0zMjI0MjBjOTI3MWUiLCJlbWFpbCI6InVkdWxhOTFAb3V0bG9vay5jb20iLCJyb2xlIjoicmVjcnVpdGVyIiwiZmlyc3ROYW1lIjoiVWR1bGEiLCJqdGkiOiI1ZDNjODc1Ny0xNDJmLTRkY2QtOTU4OS0wNzNlZGZmYjdlYjEiLCJleHAiOjE3Nzg1MDY4MDYsImlzcyI6InZldHRseS1hdXRoLXNlcnZpY2UiLCJhdWQiOiJ2ZXR0bHktcGxhdGZvcm0ifQ.wPfCYTguzIMTYKkuPR8hu8qtm7l6HDaFLgHj_UaH0s0
 
-GET {{Vettly.JobService_HostAddress}}/weatherforecast/
+### Create organization (recruiter only — do this before posting jobs)
+POST {{orgBaseUrl}}/api/organizations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Acme Corp",
+  "industry": "Technology",
+  "description": "We build great software.",
+  "website": "https://acme.com"
+}
+
+###
+
+### Get my organization
+GET {{orgBaseUrl}}/api/organizations/mine
+Authorization: Bearer {{token}}
+
+###
+
+### Get all open jobs (public)
+GET {{baseUrl}}/api/jobs
+Accept: application/json
+
+###
+
+### Get all open jobs with filters (public)
+GET {{baseUrl}}/api/jobs?search=engineer&jobType=full-time&experienceLevel=senior
+Accept: application/json
+
+###
+
+### Get single job by ID (public)
+GET {{baseUrl}}/api/jobs/<paste_job_id_here>
+Accept: application/json
+
+###
+
+### Create a job (recruiter only)
+POST {{baseUrl}}/api/jobs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Senior Software Engineer",
+  "description": "We are looking for a Senior Software Engineer to join our team. You will be responsible for designing and building scalable backend systems.",
+  "location": "San Francisco, CA",
+  "jobType": "full-time",
+  "experienceLevel": "senior",
+  "salaryMin": 120000,
+  "salaryMax": 160000,
+  "skills": [
+    { "name": "C#", "isRequired": true },
+    { "name": ".NET", "isRequired": true },
+    { "name": "PostgreSQL", "isRequired": false },
+    { "name": "Docker", "isRequired": false }
+  ]
+}
+
+###
+
+### Update a job (recruiter only)
+PUT {{baseUrl}}/api/jobs/<paste_job_id_here>
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Senior Software Engineer",
+  "description": "Updated description.",
+  "location": "Remote",
+  "jobType": "remote",
+  "experienceLevel": "senior",
+  "salaryMin": 130000,
+  "salaryMax": 170000,
+  "skills": [
+    { "name": "C#", "isRequired": true },
+    { "name": ".NET", "isRequired": true }
+  ]
+}
+
+###
+
+### Update job status (recruiter only)
+PATCH {{baseUrl}}/api/jobs/cf9de251-c24e-447e-ad3f-6bab1aa8b9ea/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "open"
+}
+
+###
+
+### Delete a job (recruiter only)
+DELETE {{baseUrl}}/api/jobs/<paste_job_id_here>
+Authorization: Bearer {{token}}
+
+###
+
+### Get my jobs (recruiter only)
+GET {{baseUrl}}/api/jobs/my-jobs
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
