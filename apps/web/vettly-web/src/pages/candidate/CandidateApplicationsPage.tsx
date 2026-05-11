@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { useApplications } from "../../api/candidate/candidate.api";
+import { useJob } from "../../api/job/job.api";
 import { StatusBadge } from "./components/StatusBadge";
+import { formatDate } from "../../utils/format";
 import type { Application, ApplicationStatus } from "../../types/candidate.types";
+
+function JobTitle({ jobId }: Readonly<{ jobId: string }>) {
+  const { data: job } = useJob(jobId);
+  return (
+    <p className="font-bold font-body text-on-surface">
+      {job ? job.title : `Job #${jobId.slice(0, 8)}…`}
+    </p>
+  );
+}
 
 type FilterTab = "all" | "active" | "closed";
 
 const ACTIVE_STATUSES: ApplicationStatus[] = ["applied", "reviewing", "interview"];
 const CLOSED_STATUSES: ApplicationStatus[] = ["rejected", "accepted"];
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function filterApplications(apps: Application[], tab: FilterTab): Application[] {
   if (tab === "active") return apps.filter((a) => ACTIVE_STATUSES.includes(a.status));
@@ -133,9 +136,7 @@ export default function CandidateApplicationsPage() {
 
               {/* Job info */}
               <div className="flex-1 min-w-0">
-                <p className="font-bold font-body text-on-surface">
-                  Job ID: {app.jobId.slice(0, 8)}…
-                </p>
+                <JobTitle jobId={app.jobId} />
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                   <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body">
                     <span

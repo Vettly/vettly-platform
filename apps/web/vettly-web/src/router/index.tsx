@@ -11,6 +11,7 @@ import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import CandidateHomePage from "../pages/candidate/CandidateHomePage";
 import CandidateApplicationsPage from "../pages/candidate/CandidateApplicationsPage";
 import CandidateProfilePage from "../pages/candidate/profile/CandidateProfilePage";
+import JobListingsPage from "../pages/candidate/JobListingsPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <CandidateHomePage /> },
+      { path: "jobs", element: <JobListingsPage /> },
       { path: "applications", element: <CandidateApplicationsPage /> },
       { path: "profile", element: <CandidateProfilePage /> },
     ],

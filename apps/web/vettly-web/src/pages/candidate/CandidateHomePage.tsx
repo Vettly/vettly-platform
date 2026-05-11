@@ -1,108 +1,28 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import {
-  useApplications,
-  useEducation,
-  useExperience,
-  useProfile,
-  useResumes,
-  useSkills,
-} from "../../api/candidate/candidate.api";
+import { useApplications, useProfile } from "../../api/candidate/candidate.api";
 import { StatusBadge } from "./components/StatusBadge";
+import { StatCard } from "./components/StatCard";
+import { computeCompleteness } from "./utils";
+import { formatDate } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
-import type { ApplicationStatus, CandidateProfile, Education, Experience, Resume, Skill } from "../../types/candidate.types";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function computeCompleteness(
-  profile: CandidateProfile | undefined,
-  experiences: Experience[],
-  educations: Education[],
-  skills: Skill[],
-  resumes: Resume[]
-) {
-  const checks: Record<string, boolean> = {
-    headline: !!profile?.headline,
-    bio: !!profile?.bio,
-    experience: experiences.length > 0,
-    education: educations.length > 0,
-    skills: skills.length > 0,
-    resume: resumes.length > 0,
-  };
-  const done = Object.values(checks).filter(Boolean).length;
-  return { pct: Math.round((done / 6) * 100), checks };
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  sub,
-}: {
-  icon: string;
-  label: string;
-  value: string | number;
-  sub?: string;
-}) {
-  return (
-    <div className="bg-surface-container rounded-2xl border border-outline-variant p-5 flex items-start gap-4">
-      <div className="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-        <span className="material-symbols-outlined text-on-secondary-container" style={{ fontSize: "22px" }}>
-          {icon}
-        </span>
-      </div>
-      <div>
-        <p className="text-2xl font-extrabold font-headline text-on-surface leading-none">
-          {value}
-        </p>
-        <p className="text-sm font-body text-on-surface-variant mt-0.5">{label}</p>
-        {sub && <p className="text-xs font-label text-on-surface-variant mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  );
-}
+import type { ApplicationStatus } from "../../types/candidate.types";
 
 export default function CandidateHomePage() {
   const { user } = useAuthStore();
   const profileQuery = useProfile();
   const applicationsQuery = useApplications();
-  const experienceQuery = useExperience();
-  const educationQuery = useEducation();
-  const skillsQuery = useSkills();
-  const resumesQuery = useResumes();
 
-  const isLoading =
-    profileQuery.isLoading ||
-    applicationsQuery.isLoading ||
-    experienceQuery.isLoading ||
-    educationQuery.isLoading ||
-    skillsQuery.isLoading ||
-    resumesQuery.isLoading;
+  const isLoading = profileQuery.isLoading || applicationsQuery.isLoading;
 
   const profile = profileQuery.data;
   const applications = applicationsQuery.data ?? [];
-  const experiences = experienceQuery.data ?? [];
-  const educations = educationQuery.data ?? [];
-  const skills = skillsQuery.data ?? [];
-  const resumes = resumesQuery.data ?? [];
 
   const activeApplications = applications.filter(
     (a) => !["rejected", "accepted"].includes(a.status as string)
   );
 
-  const { pct, checks } = computeCompleteness(
-    profile,
-    experiences,
-    educations,
-    skills,
-    resumes
-  );
+  const { pct, checks } = computeCompleteness(profile);
 
   const recentApplications = [...applications]
     .sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime())

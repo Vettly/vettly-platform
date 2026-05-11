@@ -8,6 +8,7 @@ import defaultAvatar from "../../assets/user-avatar.png";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: "home", to: ROUTES.CANDIDATE },
+  { label: "Jobs", icon: "work_outline", to: ROUTES.CANDIDATE_JOBS },
   { label: "Applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];

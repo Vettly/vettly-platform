@@ -319,3 +319,19 @@ export const useApplication = (id: string) =>
     },
     enabled: !!id,
   });
+
+export const useApplyToJob = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { jobId: string; resumeId: string }) => {
+      const res = await client.post<Application>(
+        CANDIDATE_ENDPOINTS.APPLICATIONS,
+        data
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: candidateKeys.applications });
+    },
+  });
+};
