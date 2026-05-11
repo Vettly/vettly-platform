@@ -1,6 +1,6 @@
 namespace Vettly.JobService.Models
 {
-    public class JobPosting
+    public class JobSkill
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid JobId { get; set; }

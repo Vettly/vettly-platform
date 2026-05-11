@@ -1,4 +1,4 @@
-namespace Vettly.JobServce.Models;
+namespace Vettly.JobService.Models;
 
 
 public class JobPosting
