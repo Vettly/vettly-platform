@@ -1,12 +1,22 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useApplications, useProfile } from "../../api/candidate/candidate.api";
+import { useJob } from "../../api/job/job.api";
 import { StatusBadge } from "./components/StatusBadge";
 import { StatCard } from "./components/StatCard";
 import { computeCompleteness } from "./utils";
 import { formatDate } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
 import type { ApplicationStatus } from "../../types/candidate.types";
+
+function JobTitle({ jobId }: Readonly<{ jobId: string }>) {
+  const { data: job } = useJob(jobId);
+  return (
+    <p className="text-sm font-bold font-body text-on-surface truncate">
+      {job ? job.title : `Job #${jobId.slice(0, 8)}…`}
+    </p>
+  );
+}
 
 export default function CandidateHomePage() {
   const { user } = useAuthStore();
@@ -126,9 +136,7 @@ export default function CandidateHomePage() {
                     className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-container-low"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold font-body text-on-surface truncate">
-                        Job #{app.jobId.slice(0, 8)}
-                      </p>
+                      <JobTitle jobId={app.jobId} />
                       <p className="text-xs text-on-surface-variant font-body">
                         {formatDate(app.appliedAt)}
                       </p>
