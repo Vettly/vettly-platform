@@ -69,6 +69,10 @@ services:
       - Jwt__SecretKey=${JWT_SECRET}
       - Jwt__Issuer=vettly-auth-service
       - Jwt__Audience=vettly-platform
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
   candidate-service:
     build:
       context: ./services

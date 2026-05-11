@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, useNavigate } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { UserRole } from "../types/auth.types";
 import LandingPage from "../pages/LandingPage";
@@ -7,21 +7,12 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import OAuthCallbackPage from "../pages/auth/OAuthCallbackPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
 import NotFoundPage from "../pages/NotFoundPage";
-import { useLogout } from "../api/auth/auth.api";
+import CandidateDashboard from "../pages/candidate/CandidateDashboard";
+import CandidateHomePage from "../pages/candidate/CandidateHomePage";
+import CandidateApplicationsPage from "../pages/candidate/CandidateApplicationsPage";
+import CandidateProfilePage from "../pages/candidate/profile/CandidateProfilePage";
+import JobListingsPage from "../pages/candidate/JobListingsPage";
 import { ROUTES } from "./routes";
-
-const LogoutButton = () => {
-  const navigate = useNavigate();
-  const logout = useLogout();
-  return (
-    <button
-      onClick={() => logout.mutate(undefined, { onSuccess: () => navigate(ROUTES.AUTH.LOGIN) })}
-      disabled={logout.isPending}
-    >
-      {logout.isPending ? "Logging out..." : "Logout"}
-    </button>
-  );
-};
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
@@ -63,15 +54,21 @@ export const router = createBrowserRouter([
     path: ROUTES.CANDIDATE,
     element: (
       <RoleRoute allowedRole={UserRole.Candidate}>
-        <div>Candidate Dashboard — coming soon<br /><LogoutButton /></div>
+        <CandidateDashboard />
       </RoleRoute>
     ),
+    children: [
+      { index: true, element: <CandidateHomePage /> },
+      { path: "jobs", element: <JobListingsPage /> },
+      { path: "applications", element: <CandidateApplicationsPage /> },
+      { path: "profile", element: <CandidateProfilePage /> },
+    ],
   },
   {
     path: ROUTES.RECRUITER,
     element: (
       <RoleRoute allowedRole={UserRole.Recruiter}>
-        <div>Recruiter Dashboard — coming soon<br /><LogoutButton /></div>
+        <div>Recruiter Dashboard — coming soon</div>
       </RoleRoute>
     ),
   },
