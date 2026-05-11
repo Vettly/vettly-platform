@@ -30,6 +30,9 @@ function JobCard({
           <h3 className="font-headline font-bold text-on-surface text-base leading-snug">
             {job.title}
           </h3>
+          {job.companyName && (
+            <p className="text-sm font-body text-secondary mt-0.5">{job.companyName}</p>
+          )}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             {job.location && (
               <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body">

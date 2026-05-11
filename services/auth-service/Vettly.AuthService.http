@@ -12,9 +12,9 @@ POST {{baseUrl}}/api/auth/register
 Content-Type: {{contentType}}
 
 {
-  "email": "udula90@outlook.com",
+  "email": "udula91@outlook.com",
   "password": "Abcd_1234",
-  "role": "candidate",
+  "role": "recruiter",
   "firstName": "Udula",
   "lastName": "Thathsaridu"
 }
@@ -24,7 +24,7 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "udula90@outlook.com",
+  "email": "udula91@outlook.com",
   "password": "Abcd_1234"
 }
 

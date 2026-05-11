@@ -8,9 +8,14 @@ import type { Application, ApplicationStatus } from "../../types/candidate.types
 function JobTitle({ jobId }: Readonly<{ jobId: string }>) {
   const { data: job } = useJob(jobId);
   return (
-    <p className="font-bold font-body text-on-surface">
-      {job ? job.title : `Job #${jobId.slice(0, 8)}…`}
-    </p>
+    <div>
+      <p className="font-bold font-body text-on-surface">
+        {job ? job.title : `Job #${jobId.slice(0, 8)}…`}
+      </p>
+      {job?.companyName && (
+        <p className="text-xs font-body text-on-surface-variant">{job.companyName}</p>
+      )}
+    </div>
   );
 }
 
