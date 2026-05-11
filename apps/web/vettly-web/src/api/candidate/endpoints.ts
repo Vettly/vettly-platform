@@ -1,0 +1,15 @@
+export const CANDIDATE_ENDPOINTS = {
+  PROFILE: "/api/candidates/profile",
+  PROFILE_AVATAR: "/api/candidates/profile/avatar",
+  EXPERIENCE: "/api/candidates/experience",
+  EXPERIENCE_BY_ID: (id: string) => `/api/candidates/experience/${id}`,
+  EDUCATION: "/api/candidates/education",
+  EDUCATION_BY_ID: (id: string) => `/api/candidates/education/${id}`,
+  SKILLS: "/api/candidates/skills",
+  SKILL_BY_ID: (id: string) => `/api/candidates/skills/${id}`,
+  RESUME: "/api/candidates/resume",
+  RESUME_BY_ID: (id: string) => `/api/candidates/resume/${id}`,
+  RESUME_PRIMARY: (id: string) => `/api/candidates/resume/${id}/primary`,
+  APPLICATIONS: "/api/candidates/applications",
+  APPLICATION_BY_ID: (id: string) => `/api/candidates/applications/${id}`,
+} as const;

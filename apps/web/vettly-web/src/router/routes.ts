@@ -6,6 +6,8 @@ export const ROUTES = {
     CALLBACK: "/auth/callback",
   },
   CANDIDATE: "/candidate",
+  CANDIDATE_APPLICATIONS: "/candidate/applications",
+  CANDIDATE_PROFILE: "/candidate/profile",
   RECRUITER: "/recruiter",
   UNAUTHORIZED: "/unauthorized",
 } as const;
