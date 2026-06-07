@@ -35,6 +35,7 @@ namespace Vettly.CandidateService.Data
                 entity.Property(entity => entity.Headline).HasMaxLength(255);
                 entity.Property(entity => entity.Phone).HasMaxLength(15);
                 entity.Property(entity => entity.Location).HasMaxLength(100);
+                entity.Property(entity => entity.AvatarKey).HasMaxLength(500);
             });
             modelBuilder.Entity<Experience>(entity =>
             {
@@ -80,7 +81,6 @@ namespace Vettly.CandidateService.Data
                     .OnDelete(DeleteBehavior.Cascade);
                 entity.Property(entity => entity.FileName).IsRequired().HasMaxLength(255);
                 entity.Property(entity => entity.S3Key).IsRequired().HasMaxLength(500);
-                entity.Property(entity => entity.S3Url).IsRequired().HasMaxLength(500);
             });
 
             modelBuilder.Entity<Application>(entity =>

@@ -58,7 +58,7 @@ namespace Vettly.CandidateService.Services
                 BucketName = _config["R2:BucketName"]!,
                 Key = key,
                 Verb = HttpVerb.GET,
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddHours(1),
             };
             return _s3.GetPreSignedURL(request);
         }

@@ -68,7 +68,11 @@ namespace Vettly.CandidateService.Services
             profile.LinkedInUrl = req.LinkedInUrl ?? profile.LinkedInUrl;
             profile.GitHubUrl = req.GitHubUrl ?? profile.GitHubUrl;
             profile.PortfolioUrl = req.PortfolioUrl ?? profile.PortfolioUrl;
-            profile.AvatarUrl = req.AvatarUrl ?? profile.AvatarUrl;
+            if (req.AvatarUrl is not null)
+            {
+                profile.AvatarUrl = req.AvatarUrl;
+                profile.AvatarKey = null;
+            }
             profile.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -76,10 +80,11 @@ namespace Vettly.CandidateService.Services
         }
 
        
-        public async Task<ExperienceResponse> AddExperienceAsync(
+        public async Task<ExperienceResponse?> AddExperienceAsync(
             Guid userId, ExperienceRequest req)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
 
             var exp = new Experience
             {
@@ -99,7 +104,9 @@ namespace Vettly.CandidateService.Services
         public async Task<ExperienceResponse?> UpdateExperienceAsync(
             Guid userId, Guid experienceId, ExperienceRequest req)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
+
             var exp = await _db.Experiences
                 .FirstOrDefaultAsync(e =>
                     e.Id == experienceId && e.ProfileId == profile.Id);
@@ -119,7 +126,9 @@ namespace Vettly.CandidateService.Services
         public async Task<bool> DeleteExperienceAsync(
             Guid userId, Guid experienceId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return false;
+
             var exp = await _db.Experiences
                 .FirstOrDefaultAsync(e =>
                     e.Id == experienceId && e.ProfileId == profile.Id);
@@ -132,7 +141,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<List<ExperienceResponse>> GetExperiencesAsync(Guid userId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return [];
+
             var experiences = await _db.Experiences
                 .Where(experience => experience.ProfileId == profile.Id)
                 .OrderByDescending(experience => experience.StartDate)
@@ -140,10 +151,11 @@ namespace Vettly.CandidateService.Services
             return experiences.Select(MapExperience).ToList();
         }
 
-        public async Task<EducationResponse> AddEducationAsync(
+        public async Task<EducationResponse?> AddEducationAsync(
             Guid userId, EducationRequest req)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
 
             var edu = new Education
             {
@@ -164,7 +176,9 @@ namespace Vettly.CandidateService.Services
         public async Task<EducationResponse?> UpdateEducationAsync(
             Guid userId, Guid educationId, EducationRequest req)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
+
             var edu = await _db.Educations
                 .FirstOrDefaultAsync(education=>
                     education.Id == educationId && education.ProfileID == profile.Id);
@@ -185,7 +199,9 @@ namespace Vettly.CandidateService.Services
         public async Task<bool> DeleteEducationAsync(
             Guid userId, Guid educationId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return false;
+
             var edu = await _db.Educations
                 .FirstOrDefaultAsync(education =>
                     education.Id == educationId && education.ProfileID == profile.Id);
@@ -198,7 +214,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<List<EducationResponse>> GetEducationsAsync(Guid userId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return [];
+
             var educations = await _db.Educations
                 .Where(education => education.ProfileID == profile.Id)
                 .OrderByDescending(education => education.StartDate)
@@ -206,10 +224,11 @@ namespace Vettly.CandidateService.Services
             return educations.Select(MapEducation).ToList();
         }
 
-        public async Task<SkillResponse> AddSkillAsync(
+        public async Task<SkillResponse?> AddSkillAsync(
             Guid userId, SkillRequest req)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
 
             var skill = new Skill
             {
@@ -225,7 +244,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<bool> DeleteSkillAsync(Guid userId, Guid skillId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return false;
+
             var skill = await _db.Skills
                 .FirstOrDefaultAsync(s =>
                     s.Id == skillId && s.ProfileId == profile.Id);
@@ -238,7 +259,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<List<SkillResponse>> GetSkillsAsync(Guid userId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return [];
+
             var skills = await _db.Skills
                 .Where(skills => skills.ProfileId == profile.Id)
                 .OrderBy(skills => skills.Name)
@@ -246,19 +269,19 @@ namespace Vettly.CandidateService.Services
             return skills.Select(MapSkill).ToList();
         }
 
-        public async Task<ResumeResponse> UploadResumeAsync(
+        public async Task<ResumeResponse?> UploadResumeAsync(
             Guid userId, IFormFile file)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return null;
 
-            var (key, url) = await _s3.UploadResumeAsync(file, userId);
+            var (key, _) = await _s3.UploadResumeAsync(file, userId);
 
             var resume = new Resume
             {
                 ProfileId = profile.Id,
                 FileName = file.FileName,
                 S3Key = key,
-                S3Url = url,
                 IsPrimary = !await _db.Resumes
                     .AnyAsync(r => r.ProfileId == profile.Id),
             };
@@ -270,7 +293,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<List<ResumeResponse>> GetResumesAsync(Guid userId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return [];
+
             var resumes = await _db.Resumes
                 .Where(r => r.ProfileId == profile.Id)
                 .OrderByDescending(r => r.UploadedAt)
@@ -280,7 +305,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<bool> DeleteResumeAsync(Guid userId, Guid resumeId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return false;
+
             var resume = await _db.Resumes
                 .FirstOrDefaultAsync(r =>
                     r.Id == resumeId && r.ProfileId == profile.Id);
@@ -295,7 +322,9 @@ namespace Vettly.CandidateService.Services
 
         public async Task<bool> SetPrimaryResumeAsync(Guid userId, Guid resumeId)
         {
-            var profile = await GetOrThrowAsync(userId);
+            var profile = await FindProfileAsync(userId);
+            if (profile is null) return false;
+
             var resumes = await _db.Resumes
                 .Where(r => r.ProfileId == profile.Id)
                 .ToListAsync();
@@ -309,16 +338,10 @@ namespace Vettly.CandidateService.Services
         }
 
        
-        private async Task<CandidateProfile> GetOrThrowAsync(Guid userId)
-        {
-            var profile = await _db.Profiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-            if (profile is null)
-                throw new KeyNotFoundException("Candidate profile not found");
-            return profile;
-        }
+        private async Task<CandidateProfile?> FindProfileAsync(Guid userId) =>
+            await _db.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
-        private static ProfileResponse MapToResponse(CandidateProfile profile) => new()
+        private ProfileResponse MapToResponse(CandidateProfile profile) => new()
         {
             Id = profile.Id,
             UserId = profile.UserId,
@@ -332,7 +355,9 @@ namespace Vettly.CandidateService.Services
             LinkedInUrl = profile.LinkedInUrl,
             GitHubUrl = profile.GitHubUrl,
             PortfolioUrl = profile.PortfolioUrl,
-            AvatarUrl = profile.AvatarUrl,
+            AvatarUrl = profile.AvatarKey is not null
+                ? _s3.GetPublicUrl(profile.AvatarKey)
+                : profile.AvatarUrl,
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
             Experiences = profile.Experiences.Select(MapExperience).ToList(),
@@ -372,11 +397,11 @@ namespace Vettly.CandidateService.Services
             CreatedAt = skill.CreatedAt,
         };
 
-        private static ResumeResponse MapResume(Resume resume) => new()
+        private ResumeResponse MapResume(Resume resume) => new()
         {
             Id = resume.Id,
             FileName = resume.FileName,
-            S3Url = resume.S3Url,
+            S3Url = _s3.GetPublicUrl(resume.S3Key),
             IsPrimary = resume.IsPrimary,
             UploadedAt = resume.UploadedAt,
         };
@@ -386,13 +411,13 @@ namespace Vettly.CandidateService.Services
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (profile is null) return null;
 
-            var (_, url) = await _s3.UploadAvatarAsync(file, userId);
+            var (key, _) = await _s3.UploadAvatarAsync(file, userId);
 
-            profile.AvatarUrl = url;
+            profile.AvatarKey = key;
             profile.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
-            return url;
+            return _s3.GetPublicUrl(key);
         }
     }
 }

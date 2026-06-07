@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Vettly.CandidateService.Services;
@@ -12,6 +12,8 @@ namespace Vettly.CandidateService.Controllers
     [Authorize]
     public class CandidateController : ControllerBase
     {
+        private const string ProfileNotFoundMessage = "Profile not found";
+
         private readonly ICandidateService _candidateService;
 
         public CandidateController(ICandidateService candidateService)
@@ -25,7 +27,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var profile = await _candidateService.GetProfileAsync(userId);
-            if (profile is null) return NotFound(new { message = "Profile not found" });
+            if (profile is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(profile);
         }
         [HttpPost("profile/avatar")]
@@ -45,7 +47,7 @@ namespace Vettly.CandidateService.Controllers
 
             var userId = User.GetUserID();
             var result = await _candidateService.UploadAvatarAsync(userId, file);
-            if (result is null) return NotFound(new { message = "Profile not found" });
+            if (result is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(new { avatarUrl = result });
         }
         [HttpPost("profile")]
@@ -72,7 +74,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var profile = await _candidateService.UpdateProfileAsync(userId, req);
-            if (profile is null) return NotFound(new { message = "Profile not found" });
+            if (profile is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(profile);
         }
 
@@ -91,6 +93,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var result = await _candidateService.AddExperienceAsync(userId, req);
+            if (result is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(result);
         }
 
@@ -130,6 +133,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var result = await _candidateService.AddEducationAsync(userId, req);
+            if (result is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(result);
         }
 
@@ -168,6 +172,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var result = await _candidateService.AddSkillAsync(userId, req);
+            if (result is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(result);
         }
 
@@ -196,6 +201,7 @@ namespace Vettly.CandidateService.Controllers
 
             var userId = User.GetUserID();
             var result = await _candidateService.UploadResumeAsync(userId, file);
+            if (result is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(result);
         }
 
