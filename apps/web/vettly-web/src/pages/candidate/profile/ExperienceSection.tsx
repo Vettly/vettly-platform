@@ -9,7 +9,7 @@ import {
   useUpdateExperience,
   useDeleteExperience,
 } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../components/SectionCard";
+import { SectionCard } from "../../../components/SectionCard";
 import { formatMonthYear, isoToMonth, monthToIso } from "../../../utils/format";
 import type { Experience } from "../../../types/candidate.types";
 
