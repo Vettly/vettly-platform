@@ -14,12 +14,12 @@ namespace Vettly.CandidateService.Services
             _db = db;
         }
 
-        public async Task<ApplicationResponse> ApplyAsync(
+        public async Task<ApplicationResponse?> ApplyAsync(
             Guid userId, CreateApplicationRequest req)
         {
             var profile = await _db.Profiles
-                .FirstOrDefaultAsync(profile => profile.UserId == userId)
-                ?? throw new KeyNotFoundException("Profile not found");
+                .FirstOrDefaultAsync(profile => profile.UserId == userId);
+            if (profile is null) return null;
 
             // check not already applied
             var existing = await _db.Applications
@@ -48,8 +48,8 @@ namespace Vettly.CandidateService.Services
             Guid userId)
         {
             var profile = await _db.Profiles
-                .FirstOrDefaultAsync(profile => profile.UserId == userId)
-                ?? throw new KeyNotFoundException("Profile not found");
+                .FirstOrDefaultAsync(profile => profile.UserId == userId);
+            if (profile is null) return [];
 
             var applications = await _db.Applications
                 .Where(application => application.CandidateId == profile.Id)
@@ -63,8 +63,8 @@ namespace Vettly.CandidateService.Services
             Guid userId, Guid applicationId)
         {
             var profile = await _db.Profiles
-                .FirstOrDefaultAsync(profile => profile.UserId == userId)
-                ?? throw new KeyNotFoundException("Profile not found");
+                .FirstOrDefaultAsync(profile => profile.UserId == userId);
+            if (profile is null) return null;
 
             var application = await _db.Applications
                 .FirstOrDefaultAsync(application =>

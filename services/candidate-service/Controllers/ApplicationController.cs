@@ -25,6 +25,7 @@ namespace Vettly.CandidateService.Controllers
         {
             var userId = User.GetUserID();
             var result = await _applicationService.ApplyAsync(userId, req);
+            if (result is null) return NotFound(new { message = "Profile not found" });
             return Ok(result);
         }
 
