@@ -12,6 +12,7 @@ public class OrganizationDbContextFactory : IDesignTimeDbContextFactory<Organiza
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddUserSecrets<OrganizationDbContextFactory>(optional: true)
             .AddEnvironmentVariables()
             .Build();
 
