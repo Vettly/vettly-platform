@@ -68,7 +68,11 @@ namespace Vettly.CandidateService.Services
             profile.LinkedInUrl = req.LinkedInUrl ?? profile.LinkedInUrl;
             profile.GitHubUrl = req.GitHubUrl ?? profile.GitHubUrl;
             profile.PortfolioUrl = req.PortfolioUrl ?? profile.PortfolioUrl;
-            profile.AvatarUrl = req.AvatarUrl ?? profile.AvatarUrl;
+            if (req.AvatarUrl is not null)
+            {
+                profile.AvatarUrl = req.AvatarUrl;
+                profile.AvatarKey = null;
+            }
             profile.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -251,14 +255,13 @@ namespace Vettly.CandidateService.Services
         {
             var profile = await GetOrThrowAsync(userId);
 
-            var (key, url) = await _s3.UploadResumeAsync(file, userId);
+            var (key, _) = await _s3.UploadResumeAsync(file, userId);
 
             var resume = new Resume
             {
                 ProfileId = profile.Id,
                 FileName = file.FileName,
                 S3Key = key,
-                S3Url = url,
                 IsPrimary = !await _db.Resumes
                     .AnyAsync(r => r.ProfileId == profile.Id),
             };
@@ -318,7 +321,7 @@ namespace Vettly.CandidateService.Services
             return profile;
         }
 
-        private static ProfileResponse MapToResponse(CandidateProfile profile) => new()
+        private ProfileResponse MapToResponse(CandidateProfile profile) => new()
         {
             Id = profile.Id,
             UserId = profile.UserId,
@@ -332,7 +335,9 @@ namespace Vettly.CandidateService.Services
             LinkedInUrl = profile.LinkedInUrl,
             GitHubUrl = profile.GitHubUrl,
             PortfolioUrl = profile.PortfolioUrl,
-            AvatarUrl = profile.AvatarUrl,
+            AvatarUrl = profile.AvatarKey is not null
+                ? _s3.GetPublicUrl(profile.AvatarKey)
+                : profile.AvatarUrl,
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
             Experiences = profile.Experiences.Select(MapExperience).ToList(),
@@ -372,11 +377,11 @@ namespace Vettly.CandidateService.Services
             CreatedAt = skill.CreatedAt,
         };
 
-        private static ResumeResponse MapResume(Resume resume) => new()
+        private ResumeResponse MapResume(Resume resume) => new()
         {
             Id = resume.Id,
             FileName = resume.FileName,
-            S3Url = resume.S3Url,
+            S3Url = _s3.GetPublicUrl(resume.S3Key),
             IsPrimary = resume.IsPrimary,
             UploadedAt = resume.UploadedAt,
         };
@@ -386,13 +391,13 @@ namespace Vettly.CandidateService.Services
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (profile is null) return null;
 
-            var (_, url) = await _s3.UploadAvatarAsync(file, userId);
+            var (key, _) = await _s3.UploadAvatarAsync(file, userId);
 
-            profile.AvatarUrl = url;
+            profile.AvatarKey = key;
             profile.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
-            return url;
+            return _s3.GetPublicUrl(key);
         }
     }
 }
