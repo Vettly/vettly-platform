@@ -12,6 +12,11 @@ import CandidateHomePage from "../pages/candidate/CandidateHomePage";
 import CandidateApplicationsPage from "../pages/candidate/CandidateApplicationsPage";
 import CandidateProfilePage from "../pages/candidate/profile/CandidateProfilePage";
 import JobListingsPage from "../pages/candidate/JobListingsPage";
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
+import RecruiterHomePage from "../pages/recruiter/RecruiterHomePage";
+import RecruiterJobsPage from "../pages/recruiter/RecruiterJobsPage";
+import JobPipelinePage from "../pages/recruiter/JobPipelinePage";
+import RecruiterOrganizationPage from "../pages/recruiter/RecruiterOrganizationPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -68,9 +73,15 @@ export const router = createBrowserRouter([
     path: ROUTES.RECRUITER,
     element: (
       <RoleRoute allowedRole={UserRole.Recruiter}>
-        <div>Recruiter Dashboard — coming soon</div>
+        <RecruiterDashboard />
       </RoleRoute>
     ),
+    children: [
+      { index: true, element: <RecruiterHomePage /> },
+      { path: "jobs", element: <RecruiterJobsPage /> },
+      { path: "jobs/:jobId/pipeline", element: <JobPipelinePage /> },
+      { path: "organization", element: <RecruiterOrganizationPage /> },
+    ],
   },
   {
     path: ROUTES.UNAUTHORIZED,
