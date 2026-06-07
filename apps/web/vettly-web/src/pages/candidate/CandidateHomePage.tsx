@@ -3,7 +3,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useApplications, useProfile } from "../../api/candidate/candidate.api";
 import { useJob } from "../../api/job/job.api";
 import { StatusBadge } from "./components/StatusBadge";
-import { StatCard } from "./components/StatCard";
+import { StatCard } from "../../components/StatCard";
 import { computeCompleteness } from "./utils";
 import { formatDate } from "../../utils/format";
 import { ROUTES } from "../../router/routes";

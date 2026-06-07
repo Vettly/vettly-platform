@@ -10,5 +10,8 @@ export const ROUTES = {
   CANDIDATE_APPLICATIONS: "/candidate/applications",
   CANDIDATE_PROFILE: "/candidate/profile",
   RECRUITER: "/recruiter",
+  RECRUITER_JOBS: "/recruiter/jobs",
+  RECRUITER_JOB_PIPELINE: (id: string) => `/recruiter/jobs/${id}/pipeline`,
+  RECRUITER_ORGANIZATION: "/recruiter/organization",
   UNAUTHORIZED: "/unauthorized",
 } as const;

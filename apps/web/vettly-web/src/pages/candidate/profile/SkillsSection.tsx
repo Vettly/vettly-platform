@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useSkills, useAddSkill, useDeleteSkill } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../components/SectionCard";
+import { SectionCard } from "../../../components/SectionCard";
 
 export function SkillsSection() {
   const { data: skills = [], isLoading } = useSkills();

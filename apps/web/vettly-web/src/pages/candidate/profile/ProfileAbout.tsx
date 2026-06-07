@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useUpdateProfile } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../components/SectionCard";
+import { SectionCard } from "../../../components/SectionCard";
 import type { CandidateProfile } from "../../../types/candidate.types";
 
 const aboutSchema = z.object({
