@@ -9,6 +9,8 @@ public interface IPipelineService
 {
     Task<PipelineStageResponse>       MoveToStageAsync(Guid recruiterId,
         Guid jobId, UpdatePipelineRequest req);
+    Task<PipelineStageResponse>       RegisterApplicationAsync(Guid jobId,
+        RegisterApplicationRequest req);
     Task<List<PipelineStageResponse>> GetPipelineAsync(Guid jobId,
         string? stage);
     Task<PipelineStageResponse?>      GetCandidateStageAsync(Guid jobId,
@@ -41,6 +43,29 @@ public class PipelineService : IPipelineService
             Stage         = req.Stage,
             Notes         = req.Notes,
             MovedBy       = recruiterId,
+        };
+
+        _db.PipelineStages.Add(stage);
+        await _db.SaveChangesAsync();
+        return MapStage(stage);
+    }
+
+    public async Task<PipelineStageResponse> RegisterApplicationAsync(
+        Guid jobId, RegisterApplicationRequest req)
+    {
+        var job = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == jobId)
+            ?? throw new KeyNotFoundException("Job not found");
+
+        var existing = await _db.PipelineStages
+            .FirstOrDefaultAsync(p => p.ApplicationId == req.ApplicationId);
+        if (existing is not null) return MapStage(existing);
+
+        var stage = new PipelineStage
+        {
+            JobId         = jobId,
+            ApplicationId = req.ApplicationId,
+            CandidateId   = req.CandidateId,
+            Stage         = "applied",
         };
 
         _db.PipelineStages.Add(stage);

@@ -40,6 +40,18 @@ public class PipelineController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("applications")]
+    public async Task<IActionResult> RegisterApplication(
+        Guid jobId, [FromBody] RegisterApplicationRequest req)
+    {
+        if (User.GetRole() != "candidate")
+            return Forbid();
+
+        var result = await _pipelineService
+            .RegisterApplicationAsync(jobId, req);
+        return Ok(result);
+    }
+
     [HttpGet("application/{applicationId}")]
     public async Task<IActionResult> GetCandidateStage(
         Guid jobId, Guid applicationId)

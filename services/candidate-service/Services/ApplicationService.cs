@@ -8,14 +8,19 @@ namespace Vettly.CandidateService.Services
     public class ApplicationService : IApplicationService
     {
         private readonly CandidateDbContext _db;
+        private readonly JobClient _jobClient;
+        private readonly ILogger<ApplicationService> _logger;
 
-        public ApplicationService(CandidateDbContext db)
+        public ApplicationService(CandidateDbContext db, JobClient jobClient,
+            ILogger<ApplicationService> logger)
         {
             _db = db;
+            _jobClient = jobClient;
+            _logger = logger;
         }
 
         public async Task<ApplicationResponse?> ApplyAsync(
-            Guid userId, CreateApplicationRequest req)
+            Guid userId, CreateApplicationRequest req, string bearerToken)
         {
             var profile = await _db.Profiles
                 .FirstOrDefaultAsync(profile => profile.UserId == userId);
@@ -41,6 +46,19 @@ namespace Vettly.CandidateService.Services
 
             _db.Applications.Add(application);
             await _db.SaveChangesAsync();
+
+            try
+            {
+                await _jobClient.RegisterApplicationAsync(
+                    bearerToken, req.JobId, application.Id, profile.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to register application {ApplicationId} on job-service pipeline for job {JobId}",
+                    application.Id, req.JobId);
+            }
+
             return MapApplication(application);
         }
 
