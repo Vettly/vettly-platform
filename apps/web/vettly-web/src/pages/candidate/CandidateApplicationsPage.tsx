@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useApplications } from "../../api/candidate/candidate.api";
-import { useJob } from "../../api/job/job.api";
-import { StatusBadge } from "./components/StatusBadge";
+import { useApplicationStage, useJob } from "../../api/job/job.api";
+import { StageBadge } from "./components/StageBadge";
+import { ApplicationProgress } from "./components/ApplicationProgress";
 import { formatDate } from "../../utils/format";
 import type { Application, ApplicationStatus } from "../../types/candidate.types";
 
@@ -14,6 +15,91 @@ function JobTitle({ jobId }: Readonly<{ jobId: string }>) {
       </p>
       {job?.companyName && (
         <p className="text-xs font-body text-on-surface-variant">{job.companyName}</p>
+      )}
+    </div>
+  );
+}
+
+function ApplicationCard({ app }: Readonly<{ app: Application }>) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: stage } = useApplicationStage(app.jobId, app.id);
+
+  return (
+    <div className="bg-surface-container rounded-2xl border border-outline-variant p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Job icon */}
+        <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
+          <span
+            className="material-symbols-outlined text-on-surface-variant"
+            style={{ fontSize: "22px" }}
+          >
+            work
+          </span>
+        </div>
+
+        {/* Job info */}
+        <div className="flex-1 min-w-0">
+          <JobTitle jobId={app.jobId} />
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "14px" }}
+              >
+                calendar_today
+              </span>
+              Applied {formatDate(app.appliedAt)}
+            </span>
+            {app.matchScore != null && (
+              <span className="flex items-center gap-1 text-xs font-bold font-label text-secondary">
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "14px" }}
+                >
+                  psychology
+                </span>
+                AI Match {Math.round(app.matchScore)}%
+              </span>
+            )}
+            {app.biasFlagged && (
+              <span className="flex items-center gap-1 text-xs font-label text-error">
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "14px" }}
+                >
+                  flag
+                </span>
+                Bias flagged
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Stage + expand toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          <StageBadge stage={stage?.stage ?? "applied"} />
+          <button
+            onClick={() => setExpanded((prev) => !prev)}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"
+            aria-label={expanded ? "Hide progress" : "Show progress"}
+          >
+            <span
+              className="material-symbols-outlined transition-transform"
+              style={{
+                fontSize: "20px",
+                transform: expanded ? "rotate(180deg)" : "none",
+              }}
+            >
+              expand_more
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="mt-5 pt-5 border-t border-outline-variant">
+          <ApplicationProgress stage={stage ?? null} />
+        </div>
       )}
     </div>
   );
@@ -125,63 +211,7 @@ export default function CandidateApplicationsPage() {
       ) : (
         <div className="space-y-4">
           {sorted.map((app) => (
-            <div
-              key={app.id}
-              className="bg-surface-container rounded-2xl border border-outline-variant p-5 flex flex-col sm:flex-row sm:items-center gap-4"
-            >
-              {/* Job icon */}
-              <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
-                <span
-                  className="material-symbols-outlined text-on-surface-variant"
-                  style={{ fontSize: "22px" }}
-                >
-                  work
-                </span>
-              </div>
-
-              {/* Job info */}
-              <div className="flex-1 min-w-0">
-                <JobTitle jobId={app.jobId} />
-                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "14px" }}
-                    >
-                      calendar_today
-                    </span>
-                    Applied {formatDate(app.appliedAt)}
-                  </span>
-                  {app.matchScore != null && (
-                    <span className="flex items-center gap-1 text-xs font-bold font-label text-secondary">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "14px" }}
-                      >
-                        psychology
-                      </span>
-                      AI Match {Math.round(app.matchScore)}%
-                    </span>
-                  )}
-                  {app.biasFlagged && (
-                    <span className="flex items-center gap-1 text-xs font-label text-error">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: "14px" }}
-                      >
-                        flag
-                      </span>
-                      Bias flagged
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Status */}
-              <div className="shrink-0">
-                <StatusBadge status={app.status} />
-              </div>
-            </div>
+            <ApplicationCard key={app.id} app={app} />
           ))}
         </div>
       )}

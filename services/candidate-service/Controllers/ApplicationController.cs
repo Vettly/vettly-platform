@@ -24,7 +24,9 @@ namespace Vettly.CandidateService.Controllers
             [FromBody] CreateApplicationRequest req)
         {
             var userId = User.GetUserID();
-            var result = await _applicationService.ApplyAsync(userId, req);
+            var bearerToken = Request.Headers.Authorization
+                .ToString().Replace("Bearer ", string.Empty);
+            var result = await _applicationService.ApplyAsync(userId, req, bearerToken);
             if (result is null) return NotFound(new { message = "Profile not found" });
             return Ok(result);
         }

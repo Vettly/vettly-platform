@@ -16,6 +16,13 @@ builder.Services.AddScoped<IS3Service, S3Service>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
+builder.Services.AddHttpClient<JobClient>(client =>
+{
+    var baseUrl = builder.Configuration["JobService:BaseUrl"]
+        ?? throw new InvalidOperationException("JobService:BaseUrl is not configured");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

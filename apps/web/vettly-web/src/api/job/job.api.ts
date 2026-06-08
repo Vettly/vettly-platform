@@ -4,6 +4,7 @@ import type {
   CreateJobRequest,
   Job,
   JobSummary,
+  PipelineStage,
   UpdateJobRequest,
 } from "../../types/job.types";
 
@@ -14,6 +15,8 @@ export const jobKeys = {
   list: (filters?: JobFilters) => ["jobs", "list", filters] as const,
   detail: (id: string) => ["jobs", id] as const,
   myJobs: ["jobs", "my-jobs"] as const,
+  applicationStage: (jobId: string, applicationId: string) =>
+    ["jobs", jobId, "pipeline", "application", applicationId] as const,
 };
 
 export interface JobFilters {
@@ -39,6 +42,24 @@ export const useJob = (id: string) =>
       return res.data;
     },
     enabled: !!id,
+  });
+
+export const useApplicationStage = (jobId: string, applicationId: string) =>
+  useQuery({
+    queryKey: jobKeys.applicationStage(jobId, applicationId),
+    queryFn: async () => {
+      const res = await client.get<PipelineStage>(
+        `/api/jobs/${jobId}/pipeline/application/${applicationId}`
+      );
+      return res.data;
+    },
+    enabled: !!jobId && !!applicationId,
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 404) return false;
+      return failureCount < 1;
+    },
   });
 
 // ─── Recruiter ───────────────────────────────────────────────────────────────

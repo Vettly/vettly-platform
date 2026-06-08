@@ -70,7 +70,7 @@ services:
       - Jwt__Issuer=vettly-auth-service
       - Jwt__Audience=vettly-platform
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
-      - OrganizationService__BaseUrl=http://organization-service:8080
+      - OrganizationService__BaseUrl=${ORGANIZATION_SERVICE_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -110,6 +110,7 @@ services:
       - R2__BucketName=${R2_BUCKET_NAME}
       - R2__PublicUrl=${R2_PUBLIC_URL}
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - JobService__BaseUrl=${JOB_SERVICE_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy
