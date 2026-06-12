@@ -13,6 +13,9 @@ public class JobSummaryResponse
     public int      ApplicantCount  { get; set; }
     public DateTime CreatedAt       { get; set; }
 
+    public string?   WorkArrangement     { get; set; }
+    public DateTime? ApplicationDeadline { get; set; }
+
     public string?                CompanyName { get; set; }
     public List<JobSkillResponse> Skills      { get; set; } = [];
 }
