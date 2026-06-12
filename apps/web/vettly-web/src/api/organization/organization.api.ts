@@ -4,6 +4,7 @@ import { ORGANIZATION_ENDPOINTS } from "./endpoints";
 import type {
   CreateOrganizationRequest,
   Organization,
+  UpdateOrganizationRequest,
 } from "../../types/organization.types";
 
 const client = createClient(import.meta.env.VITE_ORG_API_URL);
@@ -34,6 +35,22 @@ export const useCreateOrganization = () => {
     mutationFn: async (data: CreateOrganizationRequest) => {
       const res = await client.post<Organization>(
         ORGANIZATION_ENDPOINTS.BASE,
+        data
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: organizationKeys.mine });
+    },
+  });
+};
+
+export const useUpdateOrganization = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: UpdateOrganizationRequest) => {
+      const res = await client.put<Organization>(
+        ORGANIZATION_ENDPOINTS.MINE,
         data
       );
       return res.data;

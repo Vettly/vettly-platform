@@ -51,3 +51,25 @@ export const useMoveToStage = (jobId: string) => {
     },
   });
 };
+
+export const useUpdateNotes = (jobId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      applicationId,
+      notes,
+    }: {
+      applicationId: string;
+      notes: string | null;
+    }) => {
+      const res = await client.patch<PipelineStage>(
+        `/api/jobs/${jobId}/pipeline/application/${applicationId}/notes`,
+        { notes }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pipeline", jobId] });
+    },
+  });
+};
