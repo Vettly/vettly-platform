@@ -92,6 +92,14 @@ namespace Vettly.CandidateService.Services
             return application is null ? null : MapApplication(application);
         }
 
+        public async Task<ApplicationResponse?> GetApplicationByIdAsync(Guid applicationId)
+        {
+            var application = await _db.Applications
+                .FirstOrDefaultAsync(application => application.Id == applicationId);
+
+            return application is null ? null : MapApplication(application);
+        }
+
         private static ApplicationResponse MapApplication(Application application) => new()
         {
             Id = application.Id,
@@ -101,6 +109,7 @@ namespace Vettly.CandidateService.Services
             AiScore = application.AiScore,
             BiasFlagged = application.BiasFlagged,
             MatchScore = application.MathScore,
+            SkillGap = application.SkillGap,
             AppliedAt = application.AppliedAt,
             UpdatedAt = application.UpdatedAt,
         };
