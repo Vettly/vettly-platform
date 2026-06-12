@@ -79,6 +79,7 @@ export default function JobPipelinePage() {
                     stageEntries.map((entry) => (
                       <CandidateCard
                         key={entry.id}
+                        jobId={jobId}
                         entry={entry}
                         onMove={handleMove}
                         isMoving={moveToStage.isPending}

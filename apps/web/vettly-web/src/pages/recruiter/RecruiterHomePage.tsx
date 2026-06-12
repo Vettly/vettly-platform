@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import { useMyJobs } from "../../api/job/job.api";
+import { useMyJobs, useMyJobsStats } from "../../api/job/job.api";
 import { useMyOrganization } from "../../api/organization/organization.api";
 import { StatCard } from "../../components/StatCard";
 import { SectionCard } from "../../components/SectionCard";
@@ -8,14 +8,28 @@ import { EmptyState } from "../../components/EmptyState";
 import { JobStatusBadge } from "./components/JobStatusBadge";
 import { ROUTES } from "../../router/routes";
 
+const STAGE_LABELS: Record<string, string> = {
+  applied: "Applied",
+  screening: "Screening",
+  matched: "Matched",
+  interview: "Interview",
+  offer: "Offer",
+  hired: "Hired",
+  rejected: "Rejected",
+};
+
+const STAGE_ORDER = ["applied", "screening", "matched", "interview", "offer", "hired", "rejected"];
+
 export default function RecruiterHomePage() {
   const { user } = useAuthStore();
   const jobsQuery = useMyJobs();
   const orgQuery = useMyOrganization();
+  const statsQuery = useMyJobsStats();
 
   const isLoading = jobsQuery.isLoading || orgQuery.isLoading;
   const jobs = jobsQuery.data ?? [];
   const organization = orgQuery.data;
+  const stats = statsQuery.data;
 
   const activeJobs = jobs.filter((j) => j.status === "open");
   const totalApplicants = jobs.reduce((sum, j) => sum + j.applicantCount, 0);
@@ -155,6 +169,116 @@ export default function RecruiterHomePage() {
           </div>
         </div>
       </div>
+
+      {/* Pipeline analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SectionCard title="Pipeline Funnel" icon="filter_alt">
+          {statsQuery.isLoading ? (
+            <div className="bg-surface-container-high animate-pulse rounded-xl h-32" />
+          ) : !stats || Object.keys(stats.pipelineFunnel).length === 0 ? (
+            <EmptyState
+              icon="filter_alt_off"
+              title="No applicants yet"
+              description="Applicants will appear here as candidates apply to your jobs."
+            />
+          ) : (
+            <div className="space-y-2.5">
+              {STAGE_ORDER.filter((stage) => stats.pipelineFunnel[stage]).map((stage) => {
+                const count = stats.pipelineFunnel[stage] ?? 0;
+                const max = Math.max(...Object.values(stats.pipelineFunnel));
+                const pct = max > 0 ? (count / max) * 100 : 0;
+                return (
+                  <div key={stage}>
+                    <div className="flex items-center justify-between text-xs font-body text-on-surface-variant mb-1">
+                      <span>{STAGE_LABELS[stage] ?? stage}</span>
+                      <span className="font-bold font-label text-on-surface">{count}</span>
+                    </div>
+                    <div className="w-full bg-surface-container-low rounded-full h-2">
+                      <div
+                        className="bg-secondary h-2 rounded-full"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard title="Applicants by Job" icon="work">
+          {statsQuery.isLoading ? (
+            <div className="bg-surface-container-high animate-pulse rounded-xl h-32" />
+          ) : !stats || stats.perJobBreakdown.length === 0 ? (
+            <EmptyState
+              icon="work_off"
+              title="No jobs yet"
+              description="Post a job to start tracking applicants."
+            />
+          ) : (
+            <div className="space-y-3">
+              {stats.perJobBreakdown.map((job) => (
+                <div key={job.id} className="bg-surface-container-low rounded-xl px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold font-body text-on-surface truncate">
+                      {job.title}
+                    </p>
+                    <span className="text-xs font-bold font-label text-secondary shrink-0 ml-2">
+                      {job.applicantCount} applicant{job.applicantCount === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  {Object.keys(job.stageBreakdown).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {STAGE_ORDER.filter((stage) => job.stageBreakdown[stage]).map((stage) => (
+                        <span
+                          key={stage}
+                          className="text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full"
+                        >
+                          {STAGE_LABELS[stage] ?? stage}: {job.stageBreakdown[stage]}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
+      </div>
+
+      {/* Applications over time */}
+      <SectionCard title="Applications (Last 8 Weeks)" icon="trending_up">
+        {statsQuery.isLoading ? (
+          <div className="bg-surface-container-high animate-pulse rounded-xl h-32" />
+        ) : !stats || stats.applicationsOverTime.every((p) => p.count === 0) ? (
+          <EmptyState
+            icon="show_chart"
+            title="No applications yet"
+            description="Application activity will appear here over time."
+          />
+        ) : (
+          <div className="flex items-end gap-2 h-32">
+            {stats.applicationsOverTime.map((point) => {
+              const max = Math.max(...stats.applicationsOverTime.map((p) => p.count), 1);
+              const heightPct = (point.count / max) * 100;
+              return (
+                <div key={point.date} className="flex-1 flex flex-col items-center gap-1 h-full">
+                  <div className="flex-1 w-full flex items-end">
+                    <div
+                      className="w-full bg-secondary rounded-t-md min-h-[2px]"
+                      style={{ height: `${heightPct}%` }}
+                      title={`${point.count} application${point.count === 1 ? "" : "s"}`}
+                    />
+                  </div>
+                  <span className="text-xs font-body text-on-surface-variant">
+                    {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </SectionCard>
     </div>
   );
 }

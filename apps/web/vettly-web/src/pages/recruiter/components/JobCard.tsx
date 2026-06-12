@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { JobStatusBadge } from "./JobStatusBadge";
-import { formatSalary } from "../../../utils/format";
+import { formatDate, formatSalary } from "../../../utils/format";
 import { ROUTES } from "../../../router/routes";
 import type { JobSummary } from "../../../types/job.types";
 
@@ -62,6 +62,22 @@ export function JobCard({
               </span>
               {job.applicantCount} applicant{job.applicantCount === 1 ? "" : "s"}
             </span>
+            {job.workArrangement && (
+              <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body capitalize">
+                <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                  home_work
+                </span>
+                {job.workArrangement}
+              </span>
+            )}
+            {job.applicationDeadline && (
+              <span className="flex items-center gap-1 text-xs text-on-surface-variant font-body">
+                <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                  event
+                </span>
+                Closes {formatDate(job.applicationDeadline)}
+              </span>
+            )}
           </div>
         </div>
       </div>
