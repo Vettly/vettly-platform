@@ -16,6 +16,8 @@ export interface JobSummary {
   status: string;
   createdAt: string;
   applicantCount: number;
+  workArrangement: string | null;
+  applicationDeadline: string | null;
   skills: JobSkill[];
 }
 
@@ -24,6 +26,7 @@ export interface Job extends JobSummary {
   recruiterId: string;
   organizationId: string | null;
   updatedAt: string;
+  benefits: string | null;
 }
 
 export type JobStatus = "draft" | "open" | "closed" | "archived";
@@ -41,6 +44,9 @@ export interface CreateJobRequest {
   experienceLevel?: string;
   salaryMin?: number;
   salaryMax?: number;
+  workArrangement?: string;
+  benefits?: string;
+  applicationDeadline?: string;
   skills?: JobSkillRequest[];
 }
 
@@ -52,6 +58,9 @@ export interface UpdateJobRequest {
   experienceLevel?: string;
   salaryMin?: number;
   salaryMax?: number;
+  workArrangement?: string;
+  benefits?: string;
+  applicationDeadline?: string;
   skills?: JobSkillRequest[];
 }
 
@@ -80,4 +89,25 @@ export interface MovePipelineRequest {
   candidateId: string;
   stage: PipelineStageName;
   notes?: string;
+}
+
+export interface JobApplicantBreakdown {
+  id: string;
+  title: string;
+  applicantCount: number;
+  stageBreakdown: Record<string, number>;
+}
+
+export interface TimeSeriesPoint {
+  date: string;
+  count: number;
+}
+
+export interface JobStats {
+  totalJobs: number;
+  openJobs: number;
+  totalApplicants: number;
+  pipelineFunnel: Record<string, number>;
+  perJobBreakdown: JobApplicantBreakdown[];
+  applicationsOverTime: TimeSeriesPoint[];
 }
