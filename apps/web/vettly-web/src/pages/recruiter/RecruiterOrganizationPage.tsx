@@ -11,6 +11,7 @@ import {
 import { SectionCard } from "../../components/SectionCard";
 import { EmptyState } from "../../components/EmptyState";
 import { formatDate } from "../../utils/format";
+import { useAuthStore } from "../../stores/authStore";
 import type { Organization } from "../../types/organization.types";
 
 const orgSchema = z.object({
@@ -381,37 +382,43 @@ function OrganizationDetails({
 }
 
 function TeamMembers({ organization }: Readonly<{ organization: Organization }>) {
+  const { user } = useAuthStore();
+  const members = organization.members ?? [];
   return (
     <SectionCard title="Team Members" icon="groups">
-      {organization.members.length === 0 ? (
+      {members.length === 0 ? (
         <EmptyState icon="group_off" title="No members yet" />
       ) : (
         <div className="space-y-2">
-          {organization.members.map((member) => (
-            <div
-              key={member.recruiterId}
-              className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-container-low"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-on-secondary-container" style={{ fontSize: "16px" }}>
-                    person
-                  </span>
+          {members.map((member) => {
+            const isYou = member.recruiterId === user?.id;
+            const name = isYou ? `${user.firstName} ${user.lastName}`.trim() : "Team member";
+            return (
+              <div
+                key={member.recruiterId}
+                className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-container-low"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-on-secondary-container" style={{ fontSize: "16px" }}>
+                      person
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold font-body text-on-surface truncate">
+                      {name} {isYou && <span className="text-on-surface-variant font-normal">(You)</span>}
+                    </p>
+                    <p className="text-xs text-on-surface-variant font-body">
+                      Joined {formatDate(member.joinedAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold font-body text-on-surface truncate">
-                    {member.recruiterId.slice(0, 8)}…
-                  </p>
-                  <p className="text-xs text-on-surface-variant font-body">
-                    Joined {formatDate(member.joinedAt)}
-                  </p>
-                </div>
+                <span className="text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-2.5 py-1 rounded-full capitalize shrink-0 ml-2">
+                  {member.role}
+                </span>
               </div>
-              <span className="text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-2.5 py-1 rounded-full capitalize shrink-0 ml-2">
-                {member.role}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </SectionCard>

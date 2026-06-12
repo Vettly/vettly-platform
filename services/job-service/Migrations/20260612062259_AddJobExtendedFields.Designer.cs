@@ -12,7 +12,7 @@ using Vettly.JobService.Data;
 namespace Vettly.JobService.Migrations
 {
     [DbContext(typeof(JobDbContext))]
-    [Migration("20260612054245_AddJobExtendedFields")]
+    [Migration("20260612062259_AddJobExtendedFields")]
     partial class AddJobExtendedFields
     {
         /// <inheritdoc />
@@ -31,6 +31,16 @@ namespace Vettly.JobService.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ApplicationDeadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Benefits")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -51,6 +61,9 @@ namespace Vettly.JobService.Migrations
                     b.Property<string>("Location")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uuid");
@@ -74,7 +87,12 @@ namespace Vettly.JobService.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("WorkArrangement")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("RecruiterId");
 

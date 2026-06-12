@@ -139,12 +139,12 @@ export function CandidateCard({
         </button>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={entry.stage}
           disabled={isMoving}
           onChange={(e) => onMove(entry, e.target.value as PipelineStageName)}
-          className="flex-1 bg-surface-container-high border border-outline-variant focus:border-secondary rounded-lg px-2.5 py-1.5 text-xs font-bold font-label text-on-surface outline-none transition-colors disabled:opacity-50"
+          className="flex-1 min-w-0 bg-surface-container-high border border-outline-variant focus:border-secondary rounded-lg px-2 py-1.5 text-xs font-bold font-label text-on-surface outline-none transition-colors disabled:opacity-50"
         >
           {STAGES.map((s) => (
             <option key={s.key} value={s.key}>
@@ -155,9 +155,12 @@ export function CandidateCard({
         <button
           type="button"
           onClick={() => setShowProfile(true)}
-          className="text-xs font-bold font-label text-secondary border border-outline-variant rounded-lg px-2.5 py-1.5 hover:bg-surface-container-high transition-colors whitespace-nowrap"
+          title="View full profile"
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-secondary border border-outline-variant hover:bg-surface-container-high transition-colors"
         >
-          View Profile
+          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+            open_in_new
+          </span>
         </button>
       </div>
 
