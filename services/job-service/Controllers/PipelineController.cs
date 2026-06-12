@@ -61,4 +61,19 @@ public class PipelineController : ControllerBase
         if (stage is null) return NotFound();
         return Ok(stage);
     }
+
+    [HttpPatch("application/{applicationId}/notes")]
+    public async Task<IActionResult> UpdateNotes(
+        Guid jobId, Guid applicationId, [FromBody] UpdateNotesRequest req)
+    {
+        if (User.GetRole() != "recruiter")
+            return Forbid();
+
+        var recruiterId = User.GetUserId();
+        var result = await _pipelineService
+            .UpdateNotesAsync(recruiterId, jobId, applicationId, req.Notes);
+
+        if (result is null) return NotFound();
+        return Ok(result);
+    }
 }
