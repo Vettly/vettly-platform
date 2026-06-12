@@ -8,6 +8,10 @@ public class Organization
     public string?  LogoUrl     { get; set; }
     public string?  Description { get; set; }
     public string?  Website     { get; set; }
+    public string?  CompanySize { get; set; }
+    public string?  Location    { get; set; }
+    public string?  LinkedInUrl { get; set; }
+    public string?  TwitterUrl  { get; set; }
     public DateTime CreatedAt   { get; set; } = DateTime.UtcNow;
 
     public ICollection<OrganizationMember> Members { get; set; } = [];
