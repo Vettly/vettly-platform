@@ -45,4 +45,17 @@ public class OrganizationController(IOrganizationService organizationService) : 
         if (org is null) return NotFound(new { message = "Organization not found" });
         return Ok(org);
     }
+
+    [HttpPut("mine")]
+    public async Task<IActionResult> UpdateMyOrganization(
+        [FromBody] UpdateOrganizationRequest req)
+    {
+        if (User.GetRole() != "recruiter")
+            return Forbid();
+
+        var recruiterId = User.GetUserId();
+        var org = await organizationService.UpdateAsync(recruiterId, req);
+        if (org is null) return NotFound(new { message = "No organization found" });
+        return Ok(org);
+    }
 }

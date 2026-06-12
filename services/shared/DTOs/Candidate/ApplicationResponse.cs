@@ -13,6 +13,7 @@ namespace Vettly.Shared.DTOs.Candidate
         public decimal? AiScore { get; set; }
         public bool BiasFlagged { get; set; }
         public decimal? MatchScore { get; set; }
+        public string? SkillGap { get; set; }
         public DateTime AppliedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

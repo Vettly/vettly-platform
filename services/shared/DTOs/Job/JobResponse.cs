@@ -15,6 +15,10 @@ public class JobResponse
     public DateTime CreatedAt       { get; set; }
     public DateTime UpdatedAt       { get; set; }
 
+    public string?   WorkArrangement     { get; set; }
+    public string?   Benefits            { get; set; }
+    public DateTime? ApplicationDeadline { get; set; }
+
     public Guid?                  OrganizationId { get; set; }
     public string?                CompanyName    { get; set; }
     public List<JobSkillResponse> Skills         { get; set; } = [];

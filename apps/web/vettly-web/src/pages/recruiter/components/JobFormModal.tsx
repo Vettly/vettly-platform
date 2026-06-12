@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useCreateJob, useUpdateJob } from "../../../api/job/job.api";
-import type { Job, JobSummary } from "../../../types/job.types";
+import type { Job, JobSkillRequest, JobSummary } from "../../../types/job.types";
 
 const JOB_TYPES = ["full-time", "part-time", "contract", "remote"];
 const EXPERIENCE_LEVELS = ["junior", "mid", "senior"];
+const WORK_ARRANGEMENTS = ["onsite", "remote", "hybrid"];
 
 const jobSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -16,6 +18,9 @@ const jobSchema = z.object({
   experienceLevel: z.string().optional(),
   salaryMin: z.string().optional(),
   salaryMax: z.string().optional(),
+  workArrangement: z.string().optional(),
+  benefits: z.string().optional(),
+  applicationDeadline: z.string().optional(),
 });
 
 type JobForm = z.infer<typeof jobSchema>;
@@ -38,6 +43,12 @@ export function JobFormModal({
   const updateJob = useUpdateJob();
   const isPending = createJob.isPending || updateJob.isPending;
 
+  const [skills, setSkills] = useState<JobSkillRequest[]>(
+    job?.skills.map((s) => ({ name: s.name, isRequired: s.isRequired })) ?? []
+  );
+  const [skillName, setSkillName] = useState("");
+  const [skillRequired, setSkillRequired] = useState(false);
+
   const { register, handleSubmit, formState: { errors } } = useForm<JobForm>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
@@ -48,8 +59,27 @@ export function JobFormModal({
       experienceLevel: job?.experienceLevel ?? "",
       salaryMin: job?.salaryMin?.toString() ?? "",
       salaryMax: job?.salaryMax?.toString() ?? "",
+      workArrangement: job?.workArrangement ?? "",
+      benefits: "benefits" in (job ?? {}) ? (job as Job).benefits ?? "" : "",
+      applicationDeadline: job?.applicationDeadline?.slice(0, 10) ?? "",
     },
   });
+
+  const addSkill = () => {
+    const name = skillName.trim();
+    if (!name) return;
+    if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+      setSkillName("");
+      return;
+    }
+    setSkills([...skills, { name, isRequired: skillRequired }]);
+    setSkillName("");
+    setSkillRequired(false);
+  };
+
+  const removeSkill = (name: string) => {
+    setSkills(skills.filter((s) => s.name !== name));
+  };
 
   const onSubmit = (data: JobForm) => {
     const payload = {
@@ -60,6 +90,10 @@ export function JobFormModal({
       experienceLevel: data.experienceLevel || undefined,
       salaryMin: toNumber(data.salaryMin),
       salaryMax: toNumber(data.salaryMax),
+      workArrangement: data.workArrangement || undefined,
+      benefits: data.benefits || undefined,
+      applicationDeadline: data.applicationDeadline || undefined,
+      skills,
     };
 
     if (isEditing && job) {
@@ -165,6 +199,33 @@ export function JobFormModal({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
+                Work Arrangement
+              </label>
+              <select
+                {...register("workArrangement")}
+                className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors capitalize"
+              >
+                <option value="">Any</option>
+                {WORK_ARRANGEMENTS.map((w) => (
+                  <option key={w} value={w} className="capitalize">{w}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
+                Application Deadline
+              </label>
+              <input
+                {...register("applicationDeadline")}
+                type="date"
+                className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
               Location
@@ -199,6 +260,72 @@ export function JobFormModal({
                 placeholder="e.g. 120000"
                 className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
+              Benefits
+            </label>
+            <textarea
+              {...register("benefits")}
+              rows={3}
+              placeholder="e.g. Health insurance, remote stipend, equity…"
+              className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
+              Skills
+            </label>
+            <div className="flex gap-2 mb-2">
+              <input
+                value={skillName}
+                onChange={(e) => setSkillName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addSkill();
+                  }
+                }}
+                type="text"
+                placeholder="e.g. React"
+                className="flex-1 bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
+              />
+              <label className="flex items-center gap-1.5 text-xs font-bold font-label text-on-surface-variant whitespace-nowrap px-2">
+                <input
+                  type="checkbox"
+                  checked={skillRequired}
+                  onChange={(e) => setSkillRequired(e.target.checked)}
+                />
+                Required
+              </label>
+              <button
+                type="button"
+                onClick={addSkill}
+                className="px-4 py-2.5 rounded-xl bg-secondary-container text-on-secondary-container font-bold font-label text-sm hover:opacity-90 transition-opacity"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <span
+                  key={skill.name}
+                  className="flex items-center gap-1.5 text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-3 py-1 rounded-full"
+                >
+                  {skill.name}
+                  {skill.isRequired && <span className="opacity-70">· Required</span>}
+                  <button
+                    type="button"
+                    onClick={() => removeSkill(skill.name)}
+                    className="hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
             </div>
           </div>
 

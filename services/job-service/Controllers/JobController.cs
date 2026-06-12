@@ -49,6 +49,18 @@ public class JobController : ControllerBase
         return Ok(jobs);
     }
 
+    [HttpGet("my-jobs/stats")]
+    [Authorize]
+    public async Task<IActionResult> GetMyJobsStats()
+    {
+        if (User.GetRole() != "recruiter")
+            return Forbid();
+
+        var recruiterId = User.GetUserId();
+        var stats       = await _jobService.GetMyJobsStatsAsync(recruiterId);
+        return Ok(stats);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateJob(

@@ -12,4 +12,8 @@ export const CANDIDATE_ENDPOINTS = {
   RESUME_PRIMARY: (id: string) => `/api/candidates/resume/${id}/primary`,
   APPLICATIONS: "/api/candidates/applications",
   APPLICATION_BY_ID: (id: string) => `/api/candidates/applications/${id}`,
+  CANDIDATE_PROFILE: (candidateId: string) =>
+    `/api/candidates/${candidateId}/profile`,
+  APPLICATION_SUMMARY: (applicationId: string) =>
+    `/api/candidates/applications/${applicationId}/summary`,
 } as const;

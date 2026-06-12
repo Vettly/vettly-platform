@@ -28,6 +28,17 @@ namespace Vettly.CandidateService.Services
             return profile is null ? null : MapToResponse(profile);
         }
 
+        public async Task<ProfileResponse?> GetProfileByIdAsync(Guid candidateId)
+        {
+            var profile = await _db.Profiles
+                .Include(profile => profile.Experiences)
+                .Include(profile => profile.Educations)
+                .Include(profile => profile.Skills)
+                .Include(profile => profile.Resumes)
+                .FirstOrDefaultAsync(profile => profile.Id == candidateId);
+            return profile is null ? null : MapToResponse(profile);
+        }
+
         public async Task<ProfileResponse> CreateProfileAsync(
             Guid userId, string email,
             string firstName, string lastName,

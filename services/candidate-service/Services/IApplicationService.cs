@@ -9,5 +9,6 @@ namespace Vettly.CandidateService.Services
         Task<List<ApplicationResponse>> GetMyApplicationsAsync(Guid userId);
         Task<ApplicationResponse?> GetApplicationAsync(Guid userId,
             Guid applicationId);
+        Task<ApplicationResponse?> GetApplicationByIdAsync(Guid applicationId);
     }
 }

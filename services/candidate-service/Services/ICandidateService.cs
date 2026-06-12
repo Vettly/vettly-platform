@@ -5,6 +5,7 @@ namespace Vettly.CandidateService.Services
     public interface ICandidateService
     {
         Task<ProfileResponse?> GetProfileAsync(Guid userId);
+        Task<ProfileResponse?> GetProfileByIdAsync(Guid candidateId);
         Task<ProfileResponse> CreateProfileAsync(Guid userId, string email,
             string firstName, string lastName, CreateProfileRequest req);
         Task<ProfileResponse?> UpdateProfileAsync(Guid userId,

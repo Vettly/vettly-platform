@@ -16,6 +16,10 @@ public class OrganizationService(OrganizationDbContext db) : IOrganizationServic
             Industry    = req.Industry,
             Description = req.Description,
             Website     = req.Website,
+            CompanySize = req.CompanySize,
+            Location    = req.Location,
+            LinkedInUrl = req.LinkedInUrl,
+            TwitterUrl  = req.TwitterUrl,
         };
 
         db.Organizations.Add(org);
@@ -35,6 +39,7 @@ public class OrganizationService(OrganizationDbContext db) : IOrganizationServic
     {
         var member = await db.OrganizationMembers
             .Include(m => m.Organization)
+                .ThenInclude(o => o.Members)
             .Where(m => m.RecruiterId == recruiterId)
             .OrderBy(m => m.JoinedAt)
             .FirstOrDefaultAsync();
@@ -44,8 +49,36 @@ public class OrganizationService(OrganizationDbContext db) : IOrganizationServic
 
     public async Task<OrganizationResponse?> GetByIdAsync(Guid orgId)
     {
-        var org = await db.Organizations.FindAsync(orgId);
+        var org = await db.Organizations
+            .Include(o => o.Members)
+            .FirstOrDefaultAsync(o => o.Id == orgId);
         return org is null ? null : MapToResponse(org);
+    }
+
+    public async Task<OrganizationResponse?> UpdateAsync(
+        Guid recruiterId, UpdateOrganizationRequest req)
+    {
+        var member = await db.OrganizationMembers
+            .Include(m => m.Organization)
+                .ThenInclude(o => o.Members)
+            .Where(m => m.RecruiterId == recruiterId)
+            .OrderBy(m => m.JoinedAt)
+            .FirstOrDefaultAsync();
+
+        if (member is null) return null;
+
+        var org = member.Organization;
+        org.Name        = req.Name        ?? org.Name;
+        org.Industry    = req.Industry    ?? org.Industry;
+        org.Description = req.Description ?? org.Description;
+        org.Website     = req.Website     ?? org.Website;
+        org.CompanySize = req.CompanySize ?? org.CompanySize;
+        org.Location    = req.Location    ?? org.Location;
+        org.LinkedInUrl = req.LinkedInUrl ?? org.LinkedInUrl;
+        org.TwitterUrl  = req.TwitterUrl  ?? org.TwitterUrl;
+
+        await db.SaveChangesAsync();
+        return MapToResponse(org);
     }
 
     private static OrganizationResponse MapToResponse(Organization org) => new()
@@ -56,6 +89,16 @@ public class OrganizationService(OrganizationDbContext db) : IOrganizationServic
         LogoUrl     = org.LogoUrl,
         Description = org.Description,
         Website     = org.Website,
+        CompanySize = org.CompanySize,
+        Location    = org.Location,
+        LinkedInUrl = org.LinkedInUrl,
+        TwitterUrl  = org.TwitterUrl,
         CreatedAt   = org.CreatedAt,
+        Members     = org.Members.Select(m => new OrganizationMemberResponse
+        {
+            RecruiterId = m.RecruiterId,
+            Role        = m.Role,
+            JoinedAt    = m.JoinedAt,
+        }).ToList(),
     };
 }

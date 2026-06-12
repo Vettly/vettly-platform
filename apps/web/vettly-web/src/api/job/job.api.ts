@@ -3,6 +3,7 @@ import { createClient } from "../client";
 import type {
   CreateJobRequest,
   Job,
+  JobStats,
   JobSummary,
   PipelineStage,
   UpdateJobRequest,
@@ -15,6 +16,7 @@ export const jobKeys = {
   list: (filters?: JobFilters) => ["jobs", "list", filters] as const,
   detail: (id: string) => ["jobs", id] as const,
   myJobs: ["jobs", "my-jobs"] as const,
+  myJobsStats: ["jobs", "my-jobs", "stats"] as const,
   applicationStage: (jobId: string, applicationId: string) =>
     ["jobs", jobId, "pipeline", "application", applicationId] as const,
 };
@@ -69,6 +71,15 @@ export const useMyJobs = () =>
     queryKey: jobKeys.myJobs,
     queryFn: async () => {
       const res = await client.get<JobSummary[]>("/api/jobs/my-jobs");
+      return res.data;
+    },
+  });
+
+export const useMyJobsStats = () =>
+  useQuery({
+    queryKey: jobKeys.myJobsStats,
+    queryFn: async () => {
+      const res = await client.get<JobStats>("/api/jobs/my-jobs/stats");
       return res.data;
     },
   });

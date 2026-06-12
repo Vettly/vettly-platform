@@ -15,13 +15,17 @@ namespace Vettly.CandidateService.Controllers
         private const string ProfileNotFoundMessage = "Profile not found";
 
         private readonly ICandidateService _candidateService;
+        private readonly IApplicationService _applicationService;
 
-        public CandidateController(ICandidateService candidateService)
+        public CandidateController(
+            ICandidateService candidateService,
+            IApplicationService applicationService)
         {
             _candidateService = candidateService;
+            _applicationService = applicationService;
         }
 
-       
+
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
@@ -29,6 +33,28 @@ namespace Vettly.CandidateService.Controllers
             var profile = await _candidateService.GetProfileAsync(userId);
             if (profile is null) return NotFound(new { message = ProfileNotFoundMessage });
             return Ok(profile);
+        }
+
+        [HttpGet("{candidateId:guid}/profile")]
+        public async Task<IActionResult> GetCandidateProfile(Guid candidateId)
+        {
+            if (User.GetRole() != "recruiter")
+                return Forbid();
+
+            var profile = await _candidateService.GetProfileByIdAsync(candidateId);
+            if (profile is null) return NotFound(new { message = ProfileNotFoundMessage });
+            return Ok(profile);
+        }
+
+        [HttpGet("applications/{applicationId:guid}/summary")]
+        public async Task<IActionResult> GetApplicationSummary(Guid applicationId)
+        {
+            if (User.GetRole() != "recruiter")
+                return Forbid();
+
+            var application = await _applicationService.GetApplicationByIdAsync(applicationId);
+            if (application is null) return NotFound(new { message = "Application not found" });
+            return Ok(application);
         }
         [HttpPost("profile/avatar")]
         public async Task<IActionResult> UploadAvatar(IFormFile file)

@@ -19,6 +19,7 @@ public interface IJobService
         Guid jobId, string status);
     Task<bool>                     DeleteJobAsync(Guid recruiterId,
         Guid jobId);
+    Task<JobStatsResponse>          GetMyJobsStatsAsync(Guid recruiterId);
 }
 
 public class JobService : IJobService
@@ -51,6 +52,9 @@ public class JobService : IJobService
             ExperienceLevel = req.ExperienceLevel,
             SalaryMin       = req.SalaryMin,
             SalaryMax       = req.SalaryMax,
+            WorkArrangement = req.WorkArrangement,
+            Benefits        = req.Benefits,
+            ApplicationDeadline = req.ApplicationDeadline,
             Status          = "draft",
         };
 
@@ -133,6 +137,9 @@ public class JobService : IJobService
         job.ExperienceLevel = req.ExperienceLevel ?? job.ExperienceLevel;
         job.SalaryMin       = req.SalaryMin       ?? job.SalaryMin;
         job.SalaryMax       = req.SalaryMax       ?? job.SalaryMax;
+        job.WorkArrangement = req.WorkArrangement ?? job.WorkArrangement;
+        job.Benefits        = req.Benefits        ?? job.Benefits;
+        job.ApplicationDeadline = req.ApplicationDeadline ?? job.ApplicationDeadline;
         job.UpdatedAt       = DateTime.UtcNow;
 
         // update skills if provided
@@ -187,6 +194,72 @@ public class JobService : IJobService
         return true;
     }
 
+    public async Task<JobStatsResponse> GetMyJobsStatsAsync(Guid recruiterId)
+    {
+        var jobs = await _db.Jobs
+            .Include(j => j.PipelineStages)
+            .Where(j => j.RecruiterId == recruiterId)
+            .ToListAsync();
+
+        var funnel = new Dictionary<string, int>();
+        var perJob = new List<JobApplicantBreakdown>();
+        var appliedDates = new List<DateTime>();
+
+        foreach (var job in jobs)
+        {
+            var latestStages = job.PipelineStages
+                .GroupBy(p => p.ApplicationId)
+                .Select(g => g.OrderByDescending(p => p.MovedAt).First())
+                .ToList();
+
+            var stageBreakdown = new Dictionary<string, int>();
+            foreach (var stage in latestStages)
+            {
+                stageBreakdown[stage.Stage] = stageBreakdown.GetValueOrDefault(stage.Stage) + 1;
+                funnel[stage.Stage] = funnel.GetValueOrDefault(stage.Stage) + 1;
+            }
+
+            perJob.Add(new JobApplicantBreakdown
+            {
+                Id             = job.Id,
+                Title          = job.Title,
+                ApplicantCount = job.PipelineStages
+                    .Select(p => p.CandidateId)
+                    .Distinct()
+                    .Count(),
+                StageBreakdown = stageBreakdown,
+            });
+
+            appliedDates.AddRange(job.PipelineStages
+                .Where(p => p.Stage == "applied")
+                .GroupBy(p => p.ApplicationId)
+                .Select(g => g.OrderBy(p => p.MovedAt).First().MovedAt));
+        }
+
+        var weekStart = DateTime.UtcNow.Date.AddDays(-7 * 7);
+        var applicationsOverTime = new List<TimeSeriesPoint>();
+        for (var i = 0; i < 8; i++)
+        {
+            var rangeStart = weekStart.AddDays(7 * i);
+            var rangeEnd   = rangeStart.AddDays(7);
+            applicationsOverTime.Add(new TimeSeriesPoint
+            {
+                Date  = rangeStart,
+                Count = appliedDates.Count(d => d >= rangeStart && d < rangeEnd),
+            });
+        }
+
+        return new JobStatsResponse
+        {
+            TotalJobs            = jobs.Count,
+            OpenJobs             = jobs.Count(j => j.Status == "open"),
+            TotalApplicants      = perJob.Sum(p => p.ApplicantCount),
+            PipelineFunnel       = funnel,
+            PerJobBreakdown      = perJob,
+            ApplicationsOverTime = applicationsOverTime,
+        };
+    }
+
     // ── MAPPERS ───────────────────────────────────
     private static JobResponse MapToResponse(JobPosting j) => new()
     {
@@ -204,6 +277,9 @@ public class JobService : IJobService
         Status          = j.Status,
         CreatedAt       = j.CreatedAt,
         UpdatedAt       = j.UpdatedAt,
+        WorkArrangement     = j.WorkArrangement,
+        Benefits            = j.Benefits,
+        ApplicationDeadline = j.ApplicationDeadline,
         Skills          = j.Skills.Select(s => new JobSkillResponse
         {
             Id         = s.Id,
@@ -228,6 +304,8 @@ public class JobService : IJobService
             .Distinct()
             .Count(),
         CreatedAt       = j.CreatedAt,
+        WorkArrangement     = j.WorkArrangement,
+        ApplicationDeadline = j.ApplicationDeadline,
         Skills          = j.Skills.Select(s => new JobSkillResponse
         {
             Id         = s.Id,
