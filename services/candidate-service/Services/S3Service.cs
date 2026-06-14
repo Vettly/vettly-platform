@@ -63,6 +63,20 @@ namespace Vettly.CandidateService.Services
             return _s3.GetPreSignedURL(request);
         }
 
+        // Old presigned URLs were stored with long expiries and go stale.
+        // If the URL points at our own R2 bucket, re-derive the key from its
+        // path and issue a fresh presigned URL; otherwise leave it untouched
+        // (e.g. an external avatar URL from an OAuth provider).
+        public string? RefreshUrl(string? url)
+        {
+            if (string.IsNullOrEmpty(url)) return url;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return url;
+            if (!uri.Host.EndsWith(".r2.cloudflarestorage.com", StringComparison.OrdinalIgnoreCase))
+                return url;
+
+            return GetPublicUrl(uri.AbsolutePath.TrimStart('/'));
+        }
+
         // ── SHARED UPLOAD HELPER ──────────────────────
         private async Task<(string key, string url)> UploadFileAsync(
             IFormFile file, string key)

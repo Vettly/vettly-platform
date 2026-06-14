@@ -368,7 +368,7 @@ namespace Vettly.CandidateService.Services
             PortfolioUrl = profile.PortfolioUrl,
             AvatarUrl = profile.AvatarKey is not null
                 ? _s3.GetPublicUrl(profile.AvatarKey)
-                : profile.AvatarUrl,
+                : _s3.RefreshUrl(profile.AvatarUrl),
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
             Experiences = profile.Experiences.Select(MapExperience).ToList(),
