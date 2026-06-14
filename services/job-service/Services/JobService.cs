@@ -12,14 +12,14 @@ public interface IJobService
     Task<JobResponse?>             GetJobAsync(Guid jobId);
     Task<List<JobSummaryResponse>> GetAllOpenJobsAsync(
         string? search, string? jobType, string? experienceLevel);
-    Task<List<JobSummaryResponse>> GetMyJobsAsync(Guid recruiterId);
+    Task<List<JobSummaryResponse>> GetMyJobsAsync(Guid recruiterId, string bearerToken);
     Task<JobResponse?>             UpdateJobAsync(Guid recruiterId,
-        Guid jobId, UpdateJobRequest req);
+        Guid jobId, UpdateJobRequest req, string bearerToken);
     Task<bool>                     UpdateJobStatusAsync(Guid recruiterId,
-        Guid jobId, string status);
+        Guid jobId, string status, string bearerToken);
     Task<bool>                     DeleteJobAsync(Guid recruiterId,
-        Guid jobId);
-    Task<JobStatsResponse>          GetMyJobsStatsAsync(Guid recruiterId);
+        Guid jobId, string bearerToken);
+    Task<JobStatsResponse>          GetMyJobsStatsAsync(Guid recruiterId, string bearerToken);
 }
 
 public class JobService : IJobService
@@ -109,26 +109,39 @@ public class JobService : IJobService
     }
 
     public async Task<List<JobSummaryResponse>> GetMyJobsAsync(
-        Guid recruiterId)
+        Guid recruiterId, string bearerToken)
     {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var jobs = await _db.Jobs
             .Include(j => j.Skills)
             .Include(j => j.PipelineStages)
-            .Where(j => j.RecruiterId == recruiterId)
+            .Where(j => orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
 
         return jobs.Select(MapToSummary).ToList();
     }
 
-    public async Task<JobResponse?> UpdateJobAsync(
-        Guid recruiterId, Guid jobId, UpdateJobRequest req)
+    private async Task<Guid?> GetOrgIdAsync(string bearerToken)
     {
+        var org = await _orgClient.GetByRecruiterAsync(bearerToken);
+        return org?.Id;
+    }
+
+    public async Task<JobResponse?> UpdateJobAsync(
+        Guid recruiterId, Guid jobId, UpdateJobRequest req, string bearerToken)
+    {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
             .Include(j => j.Skills)
             .Include(j => j.PipelineStages)
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return null;
 
@@ -164,16 +177,19 @@ public class JobService : IJobService
     }
 
     public async Task<bool> UpdateJobStatusAsync(
-        Guid recruiterId, Guid jobId, string status)
+        Guid recruiterId, Guid jobId, string status, string bearerToken)
     {
         var validStatuses = new[]
             { "draft", "open", "closed", "archived" };
         if (!validStatuses.Contains(status))
             return false;
 
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return false;
 
@@ -183,11 +199,14 @@ public class JobService : IJobService
         return true;
     }
 
-    public async Task<bool> DeleteJobAsync(Guid recruiterId, Guid jobId)
+    public async Task<bool> DeleteJobAsync(Guid recruiterId, Guid jobId, string bearerToken)
     {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return false;
 
@@ -196,11 +215,15 @@ public class JobService : IJobService
         return true;
     }
 
-    public async Task<JobStatsResponse> GetMyJobsStatsAsync(Guid recruiterId)
+    public async Task<JobStatsResponse> GetMyJobsStatsAsync(Guid recruiterId, string bearerToken)
     {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var jobs = await _db.Jobs
             .Include(j => j.PipelineStages)
-            .Where(j => j.RecruiterId == recruiterId)
+            .Where(j => orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId)
             .ToListAsync();
 
         var funnel = new Dictionary<string, int>();

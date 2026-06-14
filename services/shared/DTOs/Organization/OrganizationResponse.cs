@@ -13,6 +13,7 @@ public class OrganizationResponse
     public string?  LinkedInUrl { get; set; }
     public string?  TwitterUrl  { get; set; }
     public DateTime CreatedAt   { get; set; }
+    public string?  JoinCode    { get; set; }
 
     public List<OrganizationMemberResponse> Members { get; set; } = [];
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,10 @@ import { z } from "zod";
 import { toast } from "react-toastify";
 import {
   useCreateOrganization,
+  useJoinByCode,
   useMyOrganization,
+  useRegenerateJoinCode,
+  useSearchOrganizations,
   useUpdateOrganization,
 } from "../../api/organization/organization.api";
 import { useMyJobs } from "../../api/job/job.api";
@@ -406,6 +409,171 @@ function TeamMembers({ organization }: Readonly<{ organization: Organization }>)
   );
 }
 
+function JoinOrganizationPanel() {
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [codeInputs, setCodeInputs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(handle);
+  }, [query]);
+
+  const searchQuery = useSearchOrganizations(debouncedQuery);
+  const joinByCode = useJoinByCode();
+
+  const results = searchQuery.data ?? [];
+
+  const handleJoinByCode = (orgId: string) => {
+    const code = (codeInputs[orgId] ?? "").trim();
+    if (!code) return;
+    joinByCode.mutate(code, {
+      onSuccess: () => toast.success("Joined organization"),
+      onError: (error) => {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 404) toast.error("Invalid join code");
+        else if (status === 409) toast.error("You already belong to an organization");
+        else toast.error("Failed to join organization");
+      },
+    });
+  };
+
+  return (
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">Join an organization</span>
+      <p className="text-[12.5px] font-body text-on-surface-variant mt-1.5 mb-4">
+        Search for your company's organization, then join instantly with an invite code shared by
+        a colleague.
+      </p>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        type="text"
+        placeholder="Search organizations by name…"
+        className={inputClasses}
+      />
+
+      <div className="mt-4 flex flex-col gap-3">
+        {debouncedQuery && searchQuery.isLoading && (
+          <p className="text-[12.5px] font-body text-on-surface-variant">Searching…</p>
+        )}
+        {debouncedQuery && !searchQuery.isLoading && results.length === 0 && (
+          <p className="text-[12.5px] font-body text-on-surface-variant">No organizations found.</p>
+        )}
+        {results.map((org) => (
+          <div key={org.id} className="border border-outline-variant rounded-lg p-3.5">
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-medium font-body text-on-surface truncate">{org.name}</p>
+              <p className="text-[11.5px] font-body text-on-surface-variant truncate">
+                {[org.industry, org.location, `${org.memberCount} member${org.memberCount === 1 ? "" : "s"}`]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <input
+                value={codeInputs[org.id] ?? ""}
+                onChange={(e) => setCodeInputs((prev) => ({ ...prev, [org.id]: e.target.value }))}
+                type="text"
+                placeholder="Have a code? Enter it here"
+                className={`${inputClasses} flex-1 py-2 text-[12.5px]`}
+              />
+              <button
+                type="button"
+                onClick={() => handleJoinByCode(org.id)}
+                disabled={joinByCode.isPending || !(codeInputs[org.id] ?? "").trim()}
+                className="shrink-0 h-9 px-4 rounded-[10px] bg-secondary-fixed-dim text-on-secondary-fixed font-semibold text-[12.5px] hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NoOrganizationSection() {
+  const [tab, setTab] = useState<"create" | "join">("create");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-2 bg-surface-container-high border border-outline-variant rounded-xl p-1.5 w-fit">
+        {(["create", "join"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-lg font-semibold text-[12.5px] font-label transition-colors ${
+              tab === t
+                ? "bg-secondary-fixed-dim text-on-secondary-fixed"
+                : "text-on-surface-variant hover:bg-surface-container-highest"
+            }`}
+          >
+            {t === "create" ? "Create Organization" : "Join Organization"}
+          </button>
+        ))}
+      </div>
+      {tab === "create" ? <CreateOrganizationForm /> : <JoinOrganizationPanel />}
+    </div>
+  );
+}
+
+function InviteTeammatesCard({ organization }: Readonly<{ organization: Organization }>) {
+  const regenerateJoinCode = useRegenerateJoinCode();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!organization.joinCode) return;
+    navigator.clipboard.writeText(organization.joinCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRegenerate = () => {
+    if (
+      organization.joinCode &&
+      !window.confirm("Regenerating will invalidate the current join code. Continue?")
+    )
+      return;
+    regenerateJoinCode.mutate(undefined, {
+      onSuccess: () => toast.success("Join code regenerated"),
+      onError: () => toast.error("Failed to regenerate join code"),
+    });
+  };
+
+  return (
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">Invite teammates</span>
+      <p className="text-[12.5px] font-body text-on-surface-variant mt-1.5 mb-3">
+        Share this code with colleagues so they can join your organization instantly.
+      </p>
+      <div className="flex items-center gap-2">
+        <code className="flex-1 bg-surface-container-highest border border-outline-variant rounded-xl px-4 py-2.5 text-sm font-mono text-on-surface tracking-widest">
+          {organization.joinCode ?? "—"}
+        </code>
+        <button
+          type="button"
+          onClick={handleCopy}
+          disabled={!organization.joinCode}
+          className="h-[42px] px-4 rounded-[10px] border border-outline-variant text-on-surface font-semibold text-[12.5px] hover:bg-surface-container-highest transition-colors disabled:opacity-60"
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+        <button
+          type="button"
+          onClick={handleRegenerate}
+          disabled={regenerateJoinCode.isPending}
+          className="h-[42px] px-4 rounded-[10px] border border-outline-variant text-on-surface font-semibold text-[12.5px] hover:bg-surface-container-highest transition-colors disabled:opacity-60"
+        >
+          {organization.joinCode ? "Regenerate" : "Generate"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface JobSummaryLite {
   id: string;
   title: string;
@@ -417,10 +585,13 @@ interface JobSummaryLite {
 export default function RecruiterOrganizationPage() {
   const { data: organization, isLoading, isError, error } = useMyOrganization();
   const jobsQuery = useMyJobs();
+  const { user } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
 
   const status = (error as { response?: { status?: number } })?.response?.status;
   const notFound = isError && status === 404;
+
+  const isOwner = organization?.members?.find((m) => m.recruiterId === user?.id)?.role === "owner";
 
   const jobs = jobsQuery.data ?? [];
   const openJobs = jobs.filter((j) => j.status === "open");
@@ -477,12 +648,15 @@ export default function RecruiterOrganizationPage() {
                 <AboutCard organization={organization} />
                 <OpenRolesCard jobs={openJobs} isLoading={jobsQuery.isLoading} />
               </div>
-              <TeamMembers organization={organization} />
+              <div className="flex flex-col gap-4">
+                {isOwner && <InviteTeammatesCard organization={organization} />}
+                <TeamMembers organization={organization} />
+              </div>
             </div>
           </>
         )
       ) : notFound ? (
-        <CreateOrganizationForm />
+        <NoOrganizationSection />
       ) : (
         <p className="text-sm font-body text-error">Failed to load organization.</p>
       )}

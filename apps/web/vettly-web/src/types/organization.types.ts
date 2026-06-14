@@ -16,7 +16,18 @@ export interface Organization {
   linkedInUrl: string | null;
   twitterUrl: string | null;
   createdAt: string;
+  joinCode: string | null;
   members: OrganizationMember[];
+}
+
+export interface OrganizationSearchResult {
+  id: string;
+  name: string;
+  industry: string | null;
+  logoUrl: string | null;
+  location: string | null;
+  companySize: string | null;
+  memberCount: number;
 }
 
 export interface CreateOrganizationRequest {

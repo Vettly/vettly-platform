@@ -13,6 +13,7 @@ public class Organization
     public string?  LinkedInUrl { get; set; }
     public string?  TwitterUrl  { get; set; }
     public DateTime CreatedAt   { get; set; } = DateTime.UtcNow;
+    public string?  JoinCode    { get; set; }
 
     public ICollection<OrganizationMember> Members { get; set; } = [];
 }

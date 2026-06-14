@@ -4,6 +4,7 @@ import { ORGANIZATION_ENDPOINTS } from "./endpoints";
 import type {
   CreateOrganizationRequest,
   Organization,
+  OrganizationSearchResult,
   UpdateOrganizationRequest,
 } from "../../types/organization.types";
 
@@ -12,6 +13,7 @@ const client = createClient(import.meta.env.VITE_ORG_API_URL);
 export const organizationKeys = {
   mine: ["organization", "mine"] as const,
   detail: (id: string) => ["organization", id] as const,
+  search: (query: string) => ["organization", "search", query] as const,
 };
 
 export const useMyOrganization = () =>
@@ -52,6 +54,50 @@ export const useUpdateOrganization = () => {
       const res = await client.put<Organization>(
         ORGANIZATION_ENDPOINTS.MINE,
         data
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: organizationKeys.mine });
+    },
+  });
+};
+
+export const useSearchOrganizations = (query: string) =>
+  useQuery({
+    queryKey: organizationKeys.search(query),
+    queryFn: async () => {
+      const res = await client.get<OrganizationSearchResult[]>(
+        ORGANIZATION_ENDPOINTS.SEARCH,
+        { params: { q: query } }
+      );
+      return res.data;
+    },
+    enabled: query.trim().length > 0,
+  });
+
+export const useJoinByCode = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (joinCode: string) => {
+      const res = await client.post<Organization>(
+        ORGANIZATION_ENDPOINTS.JOIN_BY_CODE,
+        { joinCode }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: organizationKeys.mine });
+    },
+  });
+};
+
+export const useRegenerateJoinCode = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await client.post<Organization>(
+        ORGANIZATION_ENDPOINTS.REGENERATE_JOIN_CODE
       );
       return res.data;
     },

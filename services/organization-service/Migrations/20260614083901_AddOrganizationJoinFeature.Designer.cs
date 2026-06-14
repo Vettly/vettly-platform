@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Vettly.OrganizationService.Data;
@@ -11,9 +12,11 @@ using Vettly.OrganizationService.Data;
 namespace Vettly.OrganizationService.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    partial class OrganizationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260614083901_AddOrganizationJoinFeature")]
+    partial class AddOrganizationJoinFeature
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,6 +78,38 @@ namespace Vettly.OrganizationService.Migrations
                     b.ToTable("Organizations", "organizations");
                 });
 
+            modelBuilder.Entity("Vettly.OrganizationService.Models.OrganizationJoinRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("RecruiterId");
+
+                    b.ToTable("OrganizationJoinRequests", "organizations");
+                });
+
             modelBuilder.Entity("Vettly.OrganizationService.Models.OrganizationMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -104,6 +139,17 @@ namespace Vettly.OrganizationService.Migrations
                     b.ToTable("OrganizationMembers", "organizations");
                 });
 
+            modelBuilder.Entity("Vettly.OrganizationService.Models.OrganizationJoinRequest", b =>
+                {
+                    b.HasOne("Vettly.OrganizationService.Models.Organization", "Organization")
+                        .WithMany("JoinRequests")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Vettly.OrganizationService.Models.OrganizationMember", b =>
                 {
                     b.HasOne("Vettly.OrganizationService.Models.Organization", "Organization")
@@ -117,6 +163,8 @@ namespace Vettly.OrganizationService.Migrations
 
             modelBuilder.Entity("Vettly.OrganizationService.Models.Organization", b =>
                 {
+                    b.Navigation("JoinRequests");
+
                     b.Navigation("Members");
                 });
 #pragma warning restore 612, 618

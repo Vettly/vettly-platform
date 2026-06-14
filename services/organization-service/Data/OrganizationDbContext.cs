@@ -18,6 +18,8 @@ public class OrganizationDbContext(DbContextOptions<OrganizationDbContext> optio
             e.Property(o => o.Name).IsRequired().HasMaxLength(200);
             e.Property(o => o.Industry).HasMaxLength(100);
             e.Property(o => o.Website).HasMaxLength(300);
+            e.Property(o => o.JoinCode).HasMaxLength(20);
+            e.HasIndex(o => o.JoinCode).IsUnique();
         });
 
         modelBuilder.Entity<OrganizationMember>(e =>
