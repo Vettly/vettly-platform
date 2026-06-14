@@ -9,7 +9,7 @@ import {
   useUpdateExperience,
   useDeleteExperience,
 } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../../../components/SectionCard";
+import { ProfilePanel } from "../components/ProfilePanel";
 import { formatMonthYear, isoToMonth, monthToIso } from "../../../utils/format";
 import type { Experience } from "../../../types/candidate.types";
 
@@ -181,9 +181,8 @@ export function ExperienceSection() {
   };
 
   return (
-    <SectionCard
+    <ProfilePanel
       title="Experience"
-      icon="work_history"
       action={
         <button
           onClick={() => { setShowAddForm(true); setEditingId(null); }}
@@ -277,6 +276,6 @@ export function ExperienceSection() {
           ))
         )}
       </div>
-    </SectionCard>
+    </ProfilePanel>
   );
 }

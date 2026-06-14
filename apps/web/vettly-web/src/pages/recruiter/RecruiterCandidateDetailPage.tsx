@@ -1,0 +1,252 @@
+import { Link, useParams } from "react-router-dom";
+import { useJob } from "../../api/job/job.api";
+import { useCandidateStage } from "../../api/job/pipeline.api";
+import {
+  useApplicationSummary,
+  useCandidateProfile,
+} from "../../api/candidate/recruiter.api";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
+import { EmptyState } from "../../components/EmptyState";
+import { formatDate, formatMonthYear } from "../../utils/format";
+import { ROUTES } from "../../router/routes";
+
+export default function RecruiterCandidateDetailPage() {
+  const { jobId = "", applicationId = "" } = useParams<{ jobId: string; applicationId: string }>();
+
+  const { data: job, isLoading: jobLoading } = useJob(jobId);
+  const { data: stage, isLoading: stageLoading } = useCandidateStage(jobId, applicationId);
+  const { data: summary, isLoading: summaryLoading } = useApplicationSummary(applicationId);
+  const { data: profile, isLoading: profileLoading } = useCandidateProfile(stage?.candidateId ?? "");
+
+  const isLoading = jobLoading || stageLoading || summaryLoading || profileLoading;
+
+  const displayName = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Candidate";
+
+  // Skill match & gap: compare the job's listed skills against the candidate's skills.
+  const profileSkillNames = new Set(
+    (profile?.skills ?? []).map((s) => s.name.trim().toLowerCase())
+  );
+  const skillRows = (job?.skills ?? []).map((skill) => {
+    const matched = profileSkillNames.has(skill.name.trim().toLowerCase());
+    return {
+      name: skill.name,
+      matched,
+      required: skill.isRequired,
+    };
+  });
+
+  return (
+    <div className="p-6 lg:p-8 flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-3.5">
+        <Link
+          to={ROUTES.RECRUITER_CANDIDATES}
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>arrow_back</span>
+        </Link>
+        <div className="min-w-0">
+          <h1 className="text-[17px] font-semibold font-headline text-on-surface truncate">
+            {isLoading ? "Loading…" : displayName}
+          </h1>
+          <p className="text-xs font-body text-on-surface-variant mt-0.5 truncate">
+            {job?.title ?? "—"}
+            {profile?.location ? ` · ${profile.location}` : ""}
+          </p>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-10">
+          <LoadingSpinner />
+        </div>
+      ) : !profile ? (
+        <EmptyState
+          icon="person_off"
+          title="Profile not found"
+          description="This candidate's profile could not be loaded."
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+          {/* Left column */}
+          <div className="flex flex-col gap-4">
+            {/* Skill match & gap */}
+            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+              <span className="text-sm font-semibold font-headline text-on-surface">
+                Skill match &amp; gap
+              </span>
+              {skillRows.length === 0 ? (
+                <p className="text-[12.5px] font-body text-on-surface-variant mt-3">
+                  This job has no listed skills to compare against.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2.5 mt-4">
+                  {skillRows.map((row) => (
+                    <div key={row.name} className="flex items-center gap-2.5">
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "19px", color: row.matched ? "#46D39A" : "#F4A340" }}
+                      >
+                        {row.matched ? "check_circle" : "cancel"}
+                      </span>
+                      <span className="flex-1 text-[13px] font-body text-on-surface">
+                        {row.name}
+                        {row.required && (
+                          <span className="text-on-surface-variant text-[11px]"> · required</span>
+                        )}
+                      </span>
+                      <span
+                        className="text-[11.5px] font-bold font-label"
+                        style={{ color: row.matched ? "#46D39A" : "#F4A340" }}
+                      >
+                        {row.matched ? "Match" : "Gap"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Resume summary */}
+            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5 flex flex-col gap-5">
+              {profile.bio && (
+                <div>
+                  <span className="text-sm font-semibold font-headline text-on-surface">About</span>
+                  <p className="text-[13px] font-body text-on-surface-variant leading-relaxed mt-2">
+                    {profile.bio}
+                  </p>
+                </div>
+              )}
+
+              {profile.skills.length > 0 && (
+                <div>
+                  <span className="text-sm font-semibold font-headline text-on-surface">Skills</span>
+                  <div className="flex flex-wrap gap-2 mt-2.5">
+                    {profile.skills.map((skill) => (
+                      <span
+                        key={skill.id}
+                        className="text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-3 py-1 rounded-full"
+                      >
+                        {skill.name}
+                        {skill.level && <span className="opacity-70 ml-1">· {skill.level}</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile.experiences.length > 0 && (
+                <div>
+                  <span className="text-sm font-semibold font-headline text-on-surface">Experience</span>
+                  <div className="space-y-3 mt-2.5">
+                    {profile.experiences.map((exp) => (
+                      <div key={exp.id}>
+                        <p className="text-sm font-bold font-body text-on-surface">
+                          {exp.role} · {exp.company}
+                        </p>
+                        <p className="text-xs font-body text-on-surface-variant">
+                          {formatMonthYear(exp.startDate)} – {exp.endDate ? formatMonthYear(exp.endDate) : "Present"}
+                        </p>
+                        {exp.description && (
+                          <p className="text-xs font-body text-on-surface-variant mt-1">{exp.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile.educations.length > 0 && (
+                <div>
+                  <span className="text-sm font-semibold font-headline text-on-surface">Education</span>
+                  <div className="space-y-3 mt-2.5">
+                    {profile.educations.map((edu) => (
+                      <div key={edu.id}>
+                        <p className="text-sm font-bold font-body text-on-surface">
+                          {edu.degree} in {edu.field}
+                        </p>
+                        <p className="text-xs font-body text-on-surface-variant">
+                          {edu.institution} · {formatMonthYear(edu.startDate)} – {edu.endDate ? formatMonthYear(edu.endDate) : "Present"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile.resumes.length > 0 && (
+                <div>
+                  <span className="text-sm font-semibold font-headline text-on-surface">Resumes</span>
+                  <div className="space-y-2 mt-2.5">
+                    {profile.resumes.map((resume) => (
+                      <a
+                        key={resume.id}
+                        href={resume.s3Url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between bg-surface-container-highest rounded-lg px-3 py-2 hover:bg-surface-container transition-colors"
+                      >
+                        <span className="text-sm font-body text-on-surface flex items-center gap-2">
+                          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>description</span>
+                          {resume.fileName}
+                          {resume.isPrimary && (
+                            <span className="text-xs font-bold font-label text-secondary-fixed-dim">Primary</span>
+                          )}
+                        </span>
+                        <span className="text-xs font-body text-on-surface-variant">
+                          {formatDate(resume.uploadedAt)}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="flex flex-col gap-4">
+            {/* AI match score */}
+            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5 text-center">
+              <p className="text-[11.5px] font-medium font-label tracking-wide uppercase text-on-surface-variant">
+                AI match score
+              </p>
+              <p className="font-mono text-[46px] font-semibold text-[#46D39A] leading-none my-2.5">
+                {summary?.aiScore !== null && summary?.aiScore !== undefined
+                  ? Math.round(summary.aiScore)
+                  : "—"}
+              </p>
+              {summary?.skillGap ? (
+                <p className="text-xs font-body text-on-surface-variant">{summary.skillGap}</p>
+              ) : (
+                <p className="text-xs font-body text-on-surface-variant">
+                  {summary?.matchScore !== null && summary?.matchScore !== undefined
+                    ? `${Math.round(summary.matchScore)}% match for this role`
+                    : "No score available"}
+                </p>
+              )}
+            </div>
+
+            {/* Bias check */}
+            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+              <span className="text-sm font-semibold font-headline text-on-surface">Bias check</span>
+              <div className="mt-3">
+                {summary?.biasFlagged ? (
+                  <div className="flex items-start gap-2.5 text-[12.5px]" style={{ color: "#F4A340" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: "19px" }}>warning</span>
+                    <span>This application was flagged for potential bias and should be reviewed.</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2.5 text-[13px]" style={{ color: "#46D39A" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>verified_user</span>
+                    <span>No bias signals detected</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
