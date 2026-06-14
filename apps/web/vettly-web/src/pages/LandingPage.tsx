@@ -230,7 +230,7 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[700px]">
             {/* Step 1: AI Screening */}
-            <div className="md:col-span-8 bg-surface-container-lowest rounded-2xl p-10 smart-teal-accent flex flex-col justify-between group hover:bg-surface-container-low transition-all">
+            <div className="md:col-span-8 bg-surface-container-lowest rounded-2xl p-10 smart-accent flex flex-col justify-between group hover:bg-surface-container-low transition-all">
               <div>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">

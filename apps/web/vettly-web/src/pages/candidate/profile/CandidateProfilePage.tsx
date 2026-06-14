@@ -7,6 +7,8 @@ import { ExperienceSection } from "./ExperienceSection";
 import { EducationSection } from "./EducationSection";
 import { SkillsSection } from "./SkillsSection";
 import { ResumeSection } from "./ResumeSection";
+import { ProfilePanel } from "../components/ProfilePanel";
+import { computeCompleteness } from "../utils";
 
 type ProfileTab = "profile" | "documents";
 
@@ -14,6 +16,12 @@ const TABS: { key: ProfileTab; label: string; icon: string }[] = [
   { key: "profile", label: "Profile", icon: "person" },
   { key: "documents", label: "Documents", icon: "description" },
 ];
+
+function chipClasses(active: boolean): string {
+  return active
+    ? "flex items-center gap-1.5 text-[12.5px] font-semibold text-on-secondary-fixed bg-secondary-fixed-dim px-3.5 py-1.5 rounded-lg transition-colors"
+    : "flex items-center gap-1.5 text-[12.5px] font-medium text-on-surface-variant bg-surface-container-high border border-outline-variant px-3.5 py-1.5 rounded-lg hover:bg-surface-container-highest transition-colors";
+}
 
 function ProfileSkeleton() {
   return (
@@ -111,9 +119,10 @@ export default function CandidateProfilePage() {
   if (profileQuery.isError) return <ErrorState />;
 
   const profile = profileQuery.data!;
+  const { pct } = computeCompleteness(profile);
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-4">
       {/* Page heading */}
       <div>
         <h1 className="text-2xl font-extrabold font-headline text-on-surface">My Profile</h1>
@@ -126,21 +135,10 @@ export default function CandidateProfilePage() {
       <ProfileHeader profile={profile} />
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-container-low rounded-xl p-1 w-fit">
+      <div className="flex items-center gap-2.5">
         {TABS.map(({ key, label, icon }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveTab(key)}
-            className={`
-              flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold font-label transition-colors
-              ${activeTab === key
-                ? "bg-surface-container text-on-surface shadow-sm"
-                : "text-on-surface-variant hover:text-on-surface"
-              }
-            `}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>{icon}</span>
+          <button key={key} type="button" onClick={() => setActiveTab(key)} className={chipClasses(activeTab === key)}>
+            <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>{icon}</span>
             {label}
           </button>
         ))}
@@ -148,26 +146,34 @@ export default function CandidateProfilePage() {
 
       {/* Tab content */}
       {activeTab === "profile" && (
-        <div className="space-y-6">
-          <ProfileAbout profile={profile} />
-          <ExperienceSection />
-          <EducationSection />
-          <SkillsSection />
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-4 items-start">
+          <div className="space-y-4">
+            <ProfileAbout profile={profile} />
+            <ExperienceSection />
+          </div>
+          <div className="space-y-4">
+            <ProfilePanel
+              title="Profile strength"
+              action={
+                <span className="font-mono text-[15px] font-semibold" style={{ color: "#F4A340" }}>
+                  {pct}%
+                </span>
+              }
+            >
+              <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ background: "#F4A340", width: `${pct}%` }} />
+              </div>
+            </ProfilePanel>
+            <SkillsSection />
+            <EducationSection />
+          </div>
         </div>
       )}
 
       {activeTab === "documents" && (
-        <div className="bg-surface-container rounded-2xl border border-outline-variant">
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-outline-variant">
-            <span className="material-symbols-outlined text-secondary" style={{ fontSize: "20px" }}>
-              description
-            </span>
-            <h2 className="font-headline font-bold text-on-surface">Resumes</h2>
-          </div>
-          <div className="p-6">
-            <ResumeSection />
-          </div>
-        </div>
+        <ProfilePanel title="Resumes">
+          <ResumeSection />
+        </ProfilePanel>
       )}
     </div>
   );

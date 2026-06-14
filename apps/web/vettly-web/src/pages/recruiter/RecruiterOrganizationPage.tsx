@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,10 +9,11 @@ import {
   useMyOrganization,
   useUpdateOrganization,
 } from "../../api/organization/organization.api";
-import { SectionCard } from "../../components/SectionCard";
+import { useMyJobs } from "../../api/job/job.api";
 import { EmptyState } from "../../components/EmptyState";
 import { formatDate } from "../../utils/format";
 import { useAuthStore } from "../../stores/authStore";
+import { ROUTES } from "../../router/routes";
 import type { Organization } from "../../types/organization.types";
 
 const orgSchema = z.object({
@@ -29,6 +31,10 @@ type OrgForm = z.infer<typeof orgSchema>;
 
 const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
 
+const inputClasses =
+  "w-full bg-surface-container-high border border-outline-variant focus:border-secondary-fixed-dim rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors";
+const labelClasses = "block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5";
+
 function OrganizationFormFields({
   register,
   errors,
@@ -39,50 +45,24 @@ function OrganizationFormFields({
   return (
     <>
       <div>
-        <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-          Name
-        </label>
-        <input
-          {...register("name")}
-          type="text"
-          placeholder="e.g. Acme Corp"
-          className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-        />
+        <label className={labelClasses}>Name</label>
+        <input {...register("name")} type="text" placeholder="e.g. Acme Corp" className={inputClasses} />
         {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Industry
-          </label>
-          <input
-            {...register("industry")}
-            type="text"
-            placeholder="e.g. Software"
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          />
+          <label className={labelClasses}>Industry</label>
+          <input {...register("industry")} type="text" placeholder="e.g. Software" className={inputClasses} />
         </div>
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Website
-          </label>
-          <input
-            {...register("website")}
-            type="text"
-            placeholder="https://…"
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          />
+          <label className={labelClasses}>Website</label>
+          <input {...register("website")} type="text" placeholder="https://…" className={inputClasses} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Company Size
-          </label>
-          <select
-            {...register("companySize")}
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          >
+          <label className={labelClasses}>Company Size</label>
+          <select {...register("companySize")} className={inputClasses}>
             <option value="">Select…</option>
             {COMPANY_SIZES.map((size) => (
               <option key={size} value={size}>{size} employees</option>
@@ -90,50 +70,27 @@ function OrganizationFormFields({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Location
-          </label>
-          <input
-            {...register("location")}
-            type="text"
-            placeholder="e.g. San Francisco, CA"
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          />
+          <label className={labelClasses}>Location</label>
+          <input {...register("location")} type="text" placeholder="e.g. San Francisco, CA" className={inputClasses} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            LinkedIn URL
-          </label>
-          <input
-            {...register("linkedInUrl")}
-            type="text"
-            placeholder="https://linkedin.com/company/…"
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          />
+          <label className={labelClasses}>LinkedIn URL</label>
+          <input {...register("linkedInUrl")} type="text" placeholder="https://linkedin.com/company/…" className={inputClasses} />
         </div>
         <div>
-          <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Twitter / X URL
-          </label>
-          <input
-            {...register("twitterUrl")}
-            type="text"
-            placeholder="https://x.com/…"
-            className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors"
-          />
+          <label className={labelClasses}>Twitter / X URL</label>
+          <input {...register("twitterUrl")} type="text" placeholder="https://x.com/…" className={inputClasses} />
         </div>
       </div>
       <div>
-        <label className="block text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider mb-1.5">
-          Description
-        </label>
+        <label className={labelClasses}>Description</label>
         <textarea
           {...register("description")}
           rows={3}
           placeholder="What does your organization do?"
-          className="w-full bg-surface-container-high border border-outline-variant focus:border-secondary rounded-xl px-4 py-2.5 text-sm font-body text-on-surface outline-none transition-colors resize-none"
+          className={`${inputClasses} resize-none`}
         />
       </div>
     </>
@@ -170,8 +127,9 @@ function CreateOrganizationForm() {
   };
 
   return (
-    <SectionCard title="Set up your organization" icon="apartment">
-      <p className="text-sm font-body text-on-surface-variant mb-4">
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">Set up your organization</span>
+      <p className="text-[12.5px] font-body text-on-surface-variant mt-1.5 mb-4">
         You'll need an organization before you can post jobs. You'll be added as the owner.
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -179,7 +137,7 @@ function CreateOrganizationForm() {
         <button
           type="submit"
           disabled={createOrganization.isPending}
-          className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold font-body text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="flex items-center justify-center gap-2 h-[46px] px-5 rounded-[10px] bg-secondary-fixed-dim text-on-secondary-fixed font-semibold font-body text-[13.5px] hover:opacity-90 transition-opacity disabled:opacity-60"
         >
           {createOrganization.isPending && (
             <span className="material-symbols-outlined animate-spin" style={{ fontSize: "16px" }}>
@@ -189,7 +147,7 @@ function CreateOrganizationForm() {
           Create Organization
         </button>
       </form>
-    </SectionCard>
+    </div>
   );
 }
 
@@ -235,14 +193,15 @@ function EditOrganizationForm({
   };
 
   return (
-    <SectionCard title="Edit Organization" icon="edit">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">Edit Organization</span>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
         <OrganizationFormFields register={register} errors={errors} />
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={updateOrganization.isPending}
-            className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold font-body text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+            className="flex items-center justify-center gap-2 h-[46px] px-5 rounded-[10px] bg-secondary-fixed-dim text-on-secondary-fixed font-semibold font-body text-[13.5px] hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {updateOrganization.isPending && (
               <span className="material-symbols-outlined animate-spin" style={{ fontSize: "16px" }}>
@@ -254,130 +213,158 @@ function EditOrganizationForm({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant font-bold font-body text-sm hover:bg-surface-container transition-colors"
+            className="flex items-center justify-center h-[46px] px-5 rounded-[10px] border border-outline-variant text-on-surface-variant font-semibold font-body text-[13.5px] hover:bg-surface-container-highest transition-colors"
           >
             Cancel
           </button>
         </div>
       </form>
-    </SectionCard>
+    </div>
   );
 }
 
-function OrganizationDetails({
+function CompanyHeader({
   organization,
   onEdit,
 }: Readonly<{ organization: Organization; onEdit: () => void }>) {
   return (
-    <SectionCard
-      title={organization.name}
-      icon="apartment"
-      action={
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-1.5 text-xs font-bold font-label text-secondary hover:underline"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>edit</span>
-          Edit
-        </button>
-      }
-    >
-      <div className="space-y-3">
-        {organization.industry && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              category
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5 flex items-center gap-4">
+      <div
+        className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold text-on-secondary-fixed shrink-0"
+        style={{ background: "linear-gradient(135deg,#F4A340,#E0852A)" }}
+      >
+        {organization.name.charAt(0).toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-[20px] font-semibold font-headline text-on-surface tracking-tight truncate">
+          {organization.name}
+        </h1>
+        <div className="flex items-center gap-3.5 mt-1.5 flex-wrap">
+          {organization.industry && (
+            <span className="flex items-center gap-1.5 text-[12.5px] font-body text-on-surface-variant">
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>category</span>
+              {organization.industry}
             </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Industry</p>
-              <p className="text-sm font-body text-on-surface">{organization.industry}</p>
-            </div>
-          </div>
-        )}
-        {organization.location && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              location_on
+          )}
+          {organization.companySize && (
+            <span className="flex items-center gap-1.5 text-[12.5px] font-body text-on-surface-variant">
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>groups</span>
+              {organization.companySize} employees
             </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Location</p>
-              <p className="text-sm font-body text-on-surface">{organization.location}</p>
-            </div>
-          </div>
-        )}
-        {organization.companySize && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              groups
+          )}
+          {organization.location && (
+            <span className="flex items-center gap-1.5 text-[12.5px] font-body text-on-surface-variant">
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>location_on</span>
+              {organization.location}
             </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Company Size</p>
-              <p className="text-sm font-body text-on-surface">{organization.companySize} employees</p>
-            </div>
-          </div>
-        )}
-        {organization.website && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              language
-            </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Website</p>
-              <a
-                href={organization.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-body text-secondary hover:underline break-all"
-              >
-                {organization.website}
-              </a>
-            </div>
-          </div>
-        )}
-        {(organization.linkedInUrl || organization.twitterUrl) && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              share
-            </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Social</p>
-              <div className="flex gap-3">
-                {organization.linkedInUrl && (
-                  <a href={organization.linkedInUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-body text-secondary hover:underline">
-                    LinkedIn
-                  </a>
-                )}
-                {organization.twitterUrl && (
-                  <a href={organization.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-body text-secondary hover:underline">
-                    Twitter / X
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-        {organization.description && (
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-              description
-            </span>
-            <div>
-              <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Description</p>
-              <p className="text-sm font-body text-on-surface">{organization.description}</p>
-            </div>
-          </div>
-        )}
-        <div className="flex items-start gap-3">
-          <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5" style={{ fontSize: "18px" }}>
-            calendar_today
-          </span>
-          <div>
-            <p className="text-xs font-bold font-label text-on-surface-variant uppercase tracking-wider">Created</p>
-            <p className="text-sm font-body text-on-surface">{formatDate(organization.createdAt)}</p>
-          </div>
+          )}
         </div>
       </div>
-    </SectionCard>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex items-center gap-1.5 h-9 px-4 rounded-[10px] border border-outline-variant text-on-surface font-semibold text-[12.5px] hover:bg-surface-container-highest transition-colors shrink-0"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>edit</span>
+        Edit
+      </button>
+    </div>
+  );
+}
+
+function AboutCard({ organization }: Readonly<{ organization: Organization }>) {
+  return (
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">About</span>
+      {organization.description ? (
+        <p className="text-[13px] leading-6 font-body text-on-surface-variant mt-3 whitespace-pre-line">
+          {organization.description}
+        </p>
+      ) : (
+        <p className="text-[13px] font-body text-on-surface-variant mt-3">No description yet.</p>
+      )}
+      <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-outline-variant/60">
+        {organization.website && (
+          <a
+            href={organization.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[12.5px] font-body text-secondary-fixed-dim hover:underline break-all"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>language</span>
+            {organization.website}
+          </a>
+        )}
+        {organization.linkedInUrl && (
+          <a
+            href={organization.linkedInUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[12.5px] font-body text-secondary-fixed-dim hover:underline"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>link</span>
+            LinkedIn
+          </a>
+        )}
+        {organization.twitterUrl && (
+          <a
+            href={organization.twitterUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[12.5px] font-body text-secondary-fixed-dim hover:underline"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>link</span>
+            Twitter / X
+          </a>
+        )}
+        <span className="flex items-center gap-1.5 text-[12.5px] font-body text-on-surface-variant">
+          <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>calendar_today</span>
+          Created {formatDate(organization.createdAt)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function OpenRolesCard({ jobs, isLoading }: Readonly<{ jobs: JobSummaryLite[]; isLoading: boolean }>) {
+  return (
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl overflow-hidden">
+      <div className="px-5 py-[15px] border-b border-outline-variant">
+        <span className="text-[14.5px] font-semibold font-headline text-on-surface">Open roles</span>
+      </div>
+      {isLoading ? (
+        <div className="p-4 space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-surface-container-highest animate-pulse rounded-lg h-14" />
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <EmptyState icon="work_off" title="No open roles" description="Open roles will appear here." />
+      ) : (
+        <div>
+          {jobs.map((job) => (
+            <Link
+              key={job.id}
+              to={ROUTES.RECRUITER_JOB_PIPELINE(job.id)}
+              className="flex items-center justify-between gap-3 px-5 h-14 border-b border-outline-variant/60 last:border-b-0 hover:bg-surface-container-highest transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px] font-medium font-body text-on-surface truncate">{job.title}</p>
+                <p className="text-[11.5px] font-body text-on-surface-variant truncate">
+                  {[job.location, job.jobType.replace("-", " ")].filter(Boolean).join(" · ")}
+                </p>
+              </div>
+              <span className="font-mono text-[12.5px] font-semibold text-on-surface shrink-0">
+                {job.applicantCount} applicant{job.applicantCount === 1 ? "" : "s"}
+              </span>
+              <span className="material-symbols-outlined text-on-surface-variant shrink-0" style={{ fontSize: "18px" }}>
+                chevron_right
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -385,58 +372,72 @@ function TeamMembers({ organization }: Readonly<{ organization: Organization }>)
   const { user } = useAuthStore();
   const members = organization.members ?? [];
   return (
-    <SectionCard title="Team Members" icon="groups">
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+      <span className="text-sm font-semibold font-headline text-on-surface">Hiring team</span>
       {members.length === 0 ? (
-        <EmptyState icon="group_off" title="No members yet" />
+        <p className="text-[12.5px] font-body text-on-surface-variant mt-3">No members yet.</p>
       ) : (
-        <div className="space-y-2">
+        <div className="flex flex-col mt-3">
           {members.map((member) => {
             const isYou = member.recruiterId === user?.id;
             const name = isYou ? `${user.firstName} ${user.lastName}`.trim() : "Team member";
+            const initials = isYou
+              ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase()
+              : "TM";
             return (
-              <div
-                key={member.recruiterId}
-                className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-container-low"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-on-secondary-container" style={{ fontSize: "16px" }}>
-                      person
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold font-body text-on-surface truncate">
-                      {name} {isYou && <span className="text-on-surface-variant font-normal">(You)</span>}
-                    </p>
-                    <p className="text-xs text-on-surface-variant font-body">
-                      Joined {formatDate(member.joinedAt)}
-                    </p>
-                  </div>
+              <div key={member.recruiterId} className="flex items-center gap-3 py-2">
+                <div className="w-9 h-9 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center shrink-0 text-xs font-bold text-on-surface-variant">
+                  {initials}
                 </div>
-                <span className="text-xs font-bold font-label text-on-secondary-container bg-secondary-container px-2.5 py-1 rounded-full capitalize shrink-0 ml-2">
-                  {member.role}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-medium font-body text-on-surface truncate">
+                    {name} {isYou && <span className="text-on-surface-variant font-normal">(You)</span>}
+                  </p>
+                  <p className="text-[11.5px] font-body text-on-surface-variant capitalize">
+                    {member.role} · joined {formatDate(member.joinedAt)}
+                  </p>
+                </div>
               </div>
             );
           })}
         </div>
       )}
-    </SectionCard>
+    </div>
   );
+}
+
+interface JobSummaryLite {
+  id: string;
+  title: string;
+  location: string | null;
+  jobType: string;
+  applicantCount: number;
 }
 
 export default function RecruiterOrganizationPage() {
   const { data: organization, isLoading, isError, error } = useMyOrganization();
+  const jobsQuery = useMyJobs();
   const [isEditing, setIsEditing] = useState(false);
 
   const status = (error as { response?: { status?: number } })?.response?.status;
   const notFound = isError && status === 404;
 
+  const jobs = jobsQuery.data ?? [];
+  const openJobs = jobs.filter((j) => j.status === "open");
+  const totalApplicants = jobs.reduce((sum, j) => sum + j.applicantCount, 0);
+
+  const statCells = [
+    { icon: "work_outline", label: "Open Roles", value: openJobs.length },
+    { icon: "groups", label: "Team Members", value: organization?.members?.length ?? 0 },
+    { icon: "work", label: "Total Jobs", value: jobs.length },
+    { icon: "group", label: "Total Applicants", value: totalApplicants },
+  ];
+
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold font-headline text-on-surface">
-          Organization
+    <div className="p-6 lg:p-8 flex flex-col gap-4">
+      <div>
+        <h1 className="text-[23px] font-semibold font-headline text-on-surface tracking-tight">
+          Company
         </h1>
         <p className="text-on-surface-variant font-body text-sm mt-1">
           Manage your organization profile.
@@ -444,16 +445,42 @@ export default function RecruiterOrganizationPage() {
       </div>
 
       {isLoading ? (
-        <div className="bg-surface-container-high animate-pulse rounded-2xl h-48" />
+        <div className="bg-surface-container-high animate-pulse rounded-xl h-48" />
       ) : organization ? (
-        <div className="space-y-6">
-          {isEditing ? (
-            <EditOrganizationForm organization={organization} onClose={() => setIsEditing(false)} />
-          ) : (
-            <OrganizationDetails organization={organization} onEdit={() => setIsEditing(true)} />
-          )}
-          <TeamMembers organization={organization} />
-        </div>
+        isEditing ? (
+          <EditOrganizationForm organization={organization} onClose={() => setIsEditing(false)} />
+        ) : (
+          <>
+            <CompanyHeader organization={organization} onEdit={() => setIsEditing(true)} />
+
+            <div className="flex flex-col sm:flex-row bg-surface-container-high border border-outline-variant rounded-xl overflow-hidden">
+              {statCells.map((s, i) => (
+                <div
+                  key={s.label}
+                  className={`flex-1 px-5 py-[18px] ${
+                    i > 0 ? "border-t sm:border-t-0 sm:border-l border-outline-variant" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-on-surface-variant">
+                    <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>{s.icon}</span>
+                    <span className="text-[11.5px] font-medium font-label tracking-wide uppercase">{s.label}</span>
+                  </div>
+                  <div className="text-[26px] font-semibold font-headline text-on-surface leading-none mt-3">
+                    {s.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-4 items-start">
+              <div className="flex flex-col gap-4">
+                <AboutCard organization={organization} />
+                <OpenRolesCard jobs={openJobs} isLoading={jobsQuery.isLoading} />
+              </div>
+              <TeamMembers organization={organization} />
+            </div>
+          </>
+        )
       ) : notFound ? (
         <CreateOrganizationForm />
       ) : (

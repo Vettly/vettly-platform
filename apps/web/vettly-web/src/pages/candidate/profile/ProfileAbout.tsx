@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useUpdateProfile } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../../../components/SectionCard";
+import { ProfilePanel } from "../components/ProfilePanel";
 import type { CandidateProfile } from "../../../types/candidate.types";
 
 const aboutSchema = z.object({
@@ -37,7 +37,7 @@ const FIELDS: {
   { key: "portfolioUrl", label: "Portfolio", icon: "language", placeholder: "https://…" },
 ];
 
-export function ProfileAbout({ profile }: ProfileAboutProps) {
+export function ProfileAbout({ profile }: Readonly<ProfileAboutProps>) {
   const [editing, setEditing] = useState(false);
   const updateProfile = useUpdateProfile();
 
@@ -78,19 +78,18 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
   };
 
   return (
-    <SectionCard
+    <ProfilePanel
       title="About"
-      icon="person"
       action={
-        !editing ? (
+        editing ? undefined : (
           <button
             onClick={() => setEditing(true)}
             className="flex items-center gap-1.5 text-sm font-bold font-label text-secondary hover:opacity-80 transition-opacity"
           >
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>edit</span>
-            Edit
+            <span>Edit</span>
           </button>
-        ) : undefined
+        )
       }
     >
       {editing ? (
@@ -181,6 +180,6 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           )}
         </div>
       )}
-    </SectionCard>
+    </ProfilePanel>
   );
 }

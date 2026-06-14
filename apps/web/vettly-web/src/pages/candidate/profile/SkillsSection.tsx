@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useSkills, useAddSkill, useDeleteSkill } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../../../components/SectionCard";
+import { ProfilePanel } from "../components/ProfilePanel";
 
 export function SkillsSection() {
   const { data: skills = [], isLoading } = useSkills();
@@ -37,7 +37,7 @@ export function SkillsSection() {
   };
 
   return (
-    <SectionCard title="Skills" icon="psychology">
+    <ProfilePanel title="Skills">
       {isLoading ? (
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4].map((i) => (
@@ -117,6 +117,6 @@ export function SkillsSection() {
           Type a skill name above and press Enter to add it.
         </p>
       )}
-    </SectionCard>
+    </ProfilePanel>
   );
 }

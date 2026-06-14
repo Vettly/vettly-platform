@@ -8,10 +8,16 @@ export const ROUTES = {
   CANDIDATE: "/candidate",
   CANDIDATE_JOBS: "/candidate/jobs",
   CANDIDATE_APPLICATIONS: "/candidate/applications",
+  CANDIDATE_APPLICATION_DETAIL: (id: string) => `/candidate/applications/${id}`,
   CANDIDATE_PROFILE: "/candidate/profile",
   RECRUITER: "/recruiter",
   RECRUITER_JOBS: "/recruiter/jobs",
   RECRUITER_JOB_PIPELINE: (id: string) => `/recruiter/jobs/${id}/pipeline`,
   RECRUITER_ORGANIZATION: "/recruiter/organization",
+  RECRUITER_CANDIDATES: "/recruiter/candidates",
+  RECRUITER_CANDIDATE_DETAIL: (jobId: string, applicationId: string) =>
+    `/recruiter/candidates/${jobId}/${applicationId}`,
+  RECRUITER_ANALYTICS: "/recruiter/analytics",
+  RECRUITER_BIAS_REPORT: "/recruiter/bias-report",
   UNAUTHORIZED: "/unauthorized",
 } as const;

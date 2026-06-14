@@ -3,13 +3,12 @@ import { toast } from "react-toastify";
 import { useUploadAvatar, useUpdateProfile } from "../../../api/candidate/candidate.api";
 import { useAuthStore } from "../../../stores/authStore";
 import type { CandidateProfile } from "../../../types/candidate.types";
-import defaultAvatar from "../../../assets/user-avatar.png";
 
 interface ProfileHeaderProps {
   profile: CandidateProfile;
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
+export function ProfileHeader({ profile }: Readonly<ProfileHeaderProps>) {
   const { user } = useAuthStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [editingHeadline, setEditingHeadline] = useState(false);
@@ -17,6 +16,8 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
 
   const uploadAvatar = useUploadAvatar();
   const updateProfile = useUpdateProfile();
+
+  const initials = `${user?.firstName?.charAt(0) ?? ""}${user?.lastName?.charAt(0) ?? ""}`.toUpperCase() || "?";
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,19 +41,24 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   };
 
   return (
-    <div className="bg-surface-container rounded-2xl border border-outline-variant p-6">
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
         {/* Avatar */}
         <div
-          className="relative w-20 h-20 group cursor-pointer shrink-0"
+          className="relative w-16 h-16 group cursor-pointer shrink-0 rounded-2xl overflow-hidden"
           onClick={() => fileRef.current?.click()}
         >
-          <img
-            src={profile.avatarUrl ?? defaultAvatar}
-            alt="Avatar"
-            className="w-20 h-20 rounded-full object-cover"
-          />
-          <div className="absolute inset-0 rounded-full bg-primary/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          {profile.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="Avatar" className="w-16 h-16 object-cover" />
+          ) : (
+            <div
+              className="w-16 h-16 flex items-center justify-center text-2xl font-bold"
+              style={{ background: "rgba(244,163,64,.14)", color: "#F4A340" }}
+            >
+              {initials}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-primary/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             {uploadAvatar.isPending ? (
               <span className="material-symbols-outlined text-white animate-spin" style={{ fontSize: "22px" }}>
                 progress_activity
@@ -72,38 +78,35 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           />
         </div>
 
-        {/* Name + headline */}
+        {/* Name + headline + location */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-extrabold font-headline text-on-surface">
+          <h1 className="text-xl font-semibold font-headline text-on-surface">
             {user?.firstName} {user?.lastName}
           </h1>
-          <p className="text-sm text-on-surface-variant font-body">{user?.email}</p>
 
           {editingHeadline ? (
-            <div className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                value={headlineValue}
-                onChange={(e) => setHeadlineValue(e.target.value)}
-                onBlur={saveHeadline}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveHeadline();
-                  if (e.key === "Escape") {
-                    setHeadlineValue(profile.headline ?? "");
-                    setEditingHeadline(false);
-                  }
-                }}
-                placeholder="e.g. Senior Frontend Engineer"
-                autoFocus
-                className="flex-1 bg-surface-container-high border border-secondary rounded-xl px-3 py-1.5 text-sm font-body text-on-surface outline-none"
-              />
-            </div>
+            <input
+              type="text"
+              value={headlineValue}
+              onChange={(e) => setHeadlineValue(e.target.value)}
+              onBlur={saveHeadline}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveHeadline();
+                if (e.key === "Escape") {
+                  setHeadlineValue(profile.headline ?? "");
+                  setEditingHeadline(false);
+                }
+              }}
+              placeholder="e.g. Senior Frontend Engineer"
+              autoFocus
+              className="mt-1 w-full max-w-sm bg-surface-container-high border border-secondary rounded-lg px-2.5 py-1 text-[13.5px] font-body text-on-surface outline-none"
+            />
           ) : (
             <button
               onClick={() => setEditingHeadline(true)}
-              className="flex items-center gap-1.5 mt-2 group/hl"
+              className="flex items-center gap-1.5 mt-1 group/hl"
             >
-              <span className="text-sm font-body text-on-surface-variant group-hover/hl:text-on-surface transition-colors">
+              <span className="text-[13.5px] font-body text-on-surface-variant group-hover/hl:text-on-surface transition-colors">
                 {profile.headline || "Add a professional headline…"}
               </span>
               <span className="material-symbols-outlined text-on-surface-variant opacity-0 group-hover/hl:opacity-100 transition-opacity" style={{ fontSize: "16px" }}>
@@ -111,6 +114,17 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               </span>
             </button>
           )}
+
+          <div className="flex items-center gap-3.5 text-[12.5px] text-on-surface-variant mt-1.5">
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>place</span>
+              {profile.location || "Location not set"}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined" style={{ fontSize: "15px" }}>mail</span>
+              {user?.email}
+            </span>
+          </div>
         </div>
       </div>
     </div>

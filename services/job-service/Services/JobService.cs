@@ -54,7 +54,7 @@ public class JobService : IJobService
             SalaryMax       = req.SalaryMax,
             WorkArrangement = req.WorkArrangement,
             Benefits        = req.Benefits,
-            ApplicationDeadline = req.ApplicationDeadline,
+            ApplicationDeadline = AsUtc(req.ApplicationDeadline),
             Status          = "draft",
         };
 
@@ -139,7 +139,7 @@ public class JobService : IJobService
         job.SalaryMax       = req.SalaryMax       ?? job.SalaryMax;
         job.WorkArrangement = req.WorkArrangement ?? job.WorkArrangement;
         job.Benefits        = req.Benefits        ?? job.Benefits;
-        job.ApplicationDeadline = req.ApplicationDeadline ?? job.ApplicationDeadline;
+        job.ApplicationDeadline = AsUtc(req.ApplicationDeadline) ?? job.ApplicationDeadline;
         job.UpdatedAt       = DateTime.UtcNow;
 
         // update skills if provided
@@ -259,6 +259,11 @@ public class JobService : IJobService
             ApplicationsOverTime = applicationsOverTime,
         };
     }
+
+    // Postgres requires UTC for "timestamp with time zone"; JSON dates without
+    // an offset deserialize with Kind=Unspecified, so mark them as UTC here.
+    private static DateTime? AsUtc(DateTime? dt) =>
+        dt is null ? null : DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
 
     // ── MAPPERS ───────────────────────────────────
     private static JobResponse MapToResponse(JobPosting j) => new()
