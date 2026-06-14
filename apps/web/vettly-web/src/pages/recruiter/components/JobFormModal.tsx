@@ -53,14 +53,14 @@ export function JobFormModal({
     resolver: zodResolver(jobSchema),
     defaultValues: {
       title: job?.title ?? "",
-      description: "description" in (job ?? {}) ? (job as Job).description : "",
+      description: job?.description ?? "",
       location: job?.location ?? "",
       jobType: job?.jobType ?? "",
       experienceLevel: job?.experienceLevel ?? "",
       salaryMin: job?.salaryMin?.toString() ?? "",
       salaryMax: job?.salaryMax?.toString() ?? "",
       workArrangement: job?.workArrangement ?? "",
-      benefits: "benefits" in (job ?? {}) ? (job as Job).benefits ?? "" : "",
+      benefits: job?.benefits ?? "",
       applicationDeadline: job?.applicationDeadline?.slice(0, 10) ?? "",
     },
   });

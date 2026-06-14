@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useJob, useJobs } from "../../api/job/job.api";
 import { useApplications, useApplyToJob, useResumes } from "../../api/candidate/candidate.api";
+import { useNavBadgeStore } from "../../stores/navBadgeStore";
 import { formatRelative, formatSalary } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
 import type { JobSummary } from "../../types/job.types";
@@ -264,6 +265,10 @@ export default function JobListingsPage() {
   const { data: applications } = useApplications();
   const { data: resumes } = useResumes();
   const applyToJob = useApplyToJob();
+
+  useEffect(() => {
+    useNavBadgeStore.getState().markViewed("candidateFindJobs");
+  }, []);
 
   const appliedJobIds = new Set(applications?.map((a) => a.jobId) ?? []);
   const primaryResume = resumes?.find((r) => r.isPrimary) ?? resumes?.[0];

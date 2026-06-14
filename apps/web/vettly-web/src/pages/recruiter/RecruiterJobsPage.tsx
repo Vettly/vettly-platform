@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDeleteJob, useMyJobs, useUpdateJobStatus } from "../../api/job/job.api";
 import { useMyOrganization } from "../../api/organization/organization.api";
+import { useNavBadgeStore } from "../../stores/navBadgeStore";
 import { JobFormModal } from "./components/JobFormModal";
 import { EmptyState } from "../../components/EmptyState";
 import { PillBadge } from "../../components/PillBadge";
@@ -128,6 +129,10 @@ export default function RecruiterJobsPage() {
   const navigate = useNavigate();
 
   const hasOrganization = !isOrgLoading && !!organization;
+
+  useEffect(() => {
+    useNavBadgeStore.getState().markViewed("recruiterJobs");
+  }, []);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobSummary | null>(null);

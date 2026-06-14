@@ -5,6 +5,7 @@ import { useLogout } from "../../api/auth/auth.api";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { VettlyLogo } from "../../components/VettlyLogo";
 import { ROUTES } from "../../router/routes";
+import { useNewApplicantsCount } from "../../hooks/useNewApplicantsCount";
 import defaultAvatar from "../../assets/user-avatar.png";
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ export default function RecruiterDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const logout = useLogout();
+  const newApplicantsCount = useNewApplicantsCount();
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -101,6 +103,11 @@ export default function RecruiterDashboard() {
                 </span>
                 {!collapsed && (
                   <span className="font-body text-sm">{item.label}</span>
+                )}
+                {!collapsed && item.to === ROUTES.RECRUITER_JOBS && newApplicantsCount > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {newApplicantsCount}
+                  </span>
                 )}
               </Link>
             );

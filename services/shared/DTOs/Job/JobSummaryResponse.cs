@@ -15,6 +15,8 @@ public class JobSummaryResponse
 
     public string?   WorkArrangement     { get; set; }
     public DateTime? ApplicationDeadline { get; set; }
+    public string    Description         { get; set; } = string.Empty;
+    public string?   Benefits            { get; set; }
 
     public string?                CompanyName { get; set; }
     public List<JobSkillResponse> Skills      { get; set; } = [];

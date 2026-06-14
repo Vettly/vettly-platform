@@ -12,6 +12,7 @@ public class JobResponse
     public int?     SalaryMin       { get; set; }
     public int?     SalaryMax       { get; set; }
     public string   Status          { get; set; } = string.Empty;
+    public int      ApplicantCount  { get; set; }
     public DateTime CreatedAt       { get; set; }
     public DateTime UpdatedAt       { get; set; }
 

@@ -3,6 +3,8 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useLogout } from "../../api/auth/auth.api";
 import { useProfile } from "../../api/candidate/candidate.api";
+import { useJobs } from "../../api/job/job.api";
+import { useNavBadgeCount } from "../../hooks/useNavBadgeCount";
 import { ROUTES } from "../../router/routes";
 import { VettlyLogo } from "../../components/VettlyLogo";
 import defaultAvatar from "../../assets/user-avatar.png";
@@ -22,6 +24,11 @@ export default function CandidateDashboard() {
   const { user } = useAuthStore();
   const logout = useLogout();
   const { data: profile } = useProfile();
+  const { data: jobs } = useJobs();
+  const newJobsCount = useNavBadgeCount(
+    "candidateFindJobs",
+    (jobs ?? []).map((job) => job.createdAt)
+  );
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -100,6 +107,11 @@ export default function CandidateDashboard() {
                 </span>
                 {!collapsed && (
                   <span className="font-body text-sm">{item.label}</span>
+                )}
+                {!collapsed && item.to === ROUTES.CANDIDATE_JOBS && newJobsCount > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {newJobsCount}
+                  </span>
                 )}
               </Link>
             );

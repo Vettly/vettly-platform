@@ -76,6 +76,7 @@ public class JobService : IJobService
     {
         var job = await _db.Jobs
             .Include(j => j.Skills)
+            .Include(j => j.PipelineStages)
             .FirstOrDefaultAsync(j => j.Id == jobId);
         return job is null ? null : MapToResponse(job);
     }
@@ -125,6 +126,7 @@ public class JobService : IJobService
     {
         var job = await _db.Jobs
             .Include(j => j.Skills)
+            .Include(j => j.PipelineStages)
             .FirstOrDefaultAsync(j =>
                 j.Id == jobId && j.RecruiterId == recruiterId);
 
@@ -280,6 +282,10 @@ public class JobService : IJobService
         SalaryMin       = j.SalaryMin,
         SalaryMax       = j.SalaryMax,
         Status          = j.Status,
+        ApplicantCount  = j.PipelineStages
+            .Select(p => p.CandidateId)
+            .Distinct()
+            .Count(),
         CreatedAt       = j.CreatedAt,
         UpdatedAt       = j.UpdatedAt,
         WorkArrangement     = j.WorkArrangement,
@@ -311,6 +317,8 @@ public class JobService : IJobService
         CreatedAt       = j.CreatedAt,
         WorkArrangement     = j.WorkArrangement,
         ApplicationDeadline = j.ApplicationDeadline,
+        Description         = j.Description,
+        Benefits            = j.Benefits,
         Skills          = j.Skills.Select(s => new JobSkillResponse
         {
             Id         = s.Id,

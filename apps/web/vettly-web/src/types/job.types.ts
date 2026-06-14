@@ -18,15 +18,15 @@ export interface JobSummary {
   applicantCount: number;
   workArrangement: string | null;
   applicationDeadline: string | null;
+  description: string;
+  benefits: string | null;
   skills: JobSkill[];
 }
 
 export interface Job extends JobSummary {
-  description: string;
   recruiterId: string;
   organizationId: string | null;
   updatedAt: string;
-  benefits: string | null;
 }
 
 export type JobStatus = "draft" | "open" | "closed" | "archived";
