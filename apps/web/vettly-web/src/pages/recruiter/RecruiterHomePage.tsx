@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import { useMyJobs, useMyJobsStats } from "../../api/job/job.api";
+import { useJob, useMyJobs, useMyJobsStats } from "../../api/job/job.api";
 import { useMyOrganization } from "../../api/organization/organization.api";
+import { useInterviews } from "../../api/interview/interview.api";
 import { useRecruiterCandidates } from "../../hooks/useRecruiterCandidates";
 import { EmptyState } from "../../components/EmptyState";
 import { PillBadge } from "../../components/PillBadge";
 import { PIPELINE_LABELS, PIPELINE_TONES } from "../../utils/tones";
 import { formatRelative } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
+import type { JobSummary, TimeSeriesPoint } from "../../types/job.types";
+import { isRecentlyCreated, type Interview } from "../../types/interview.types";
 
 const STAGE_LABELS: Record<string, string> = {
   applied: "Applied",
@@ -24,7 +27,21 @@ const STAGE_ORDER = ["applied", "screening", "matched", "interview", "offer", "h
 
 const CANDIDATE_COLUMNS = "1.7fr 1.5fr 104px 122px 56px";
 
-const SPARK_BARS = [35, 55, 42, 70, 55, 85, 68, 100];
+/** Counts `items` per date bucket, aligned to the same date keys as `timeline`. */
+function bucketByDate(timeline: TimeSeriesPoint[], itemDates: string[]): number[] {
+  const counts = new Map<string, number>();
+  for (const iso of itemDates) {
+    const key = iso.slice(0, 10);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return timeline.map((point) => counts.get(point.date.slice(0, 10)) ?? 0);
+}
+
+function sparkHeights(counts: number[]): number[] {
+  if (counts.length === 0) return [20, 20, 20, 20, 20, 20, 20, 20];
+  const max = Math.max(...counts, 1);
+  return counts.map((c) => Math.max(8, Math.round((c / max) * 100)));
+}
 
 const RANGE_OPTIONS = [
   { key: "month", label: "This month" },
@@ -60,11 +77,35 @@ export default function RecruiterHomePage() {
     .sort((a, b) => (b.summary?.matchScore ?? -1) - (a.summary?.matchScore ?? -1))
     .slice(0, 6);
 
+  const timeline = stats?.applicationsOverTime ?? [];
+  const stageMovedDates = (stage: string) =>
+    candidateRows.filter((r) => r.entry.stage === stage).map((r) => r.entry.movedAt);
+
   const statCells = [
-    { icon: "work_outline", label: "Active Jobs", value: activeJobs.length },
-    { icon: "group", label: "Applicants", value: totalApplicants },
-    { icon: "forum", label: "In Interview", value: stats?.pipelineFunnel.interview ?? 0 },
-    { icon: "mail", label: "Offers Out", value: stats?.pipelineFunnel.offer ?? 0 },
+    {
+      icon: "work_outline",
+      label: "Active Jobs",
+      value: activeJobs.length,
+      spark: sparkHeights(bucketByDate(timeline, jobs.map((j: JobSummary) => j.createdAt))),
+    },
+    {
+      icon: "group",
+      label: "Applicants",
+      value: totalApplicants,
+      spark: sparkHeights(timeline.map((p) => p.count)),
+    },
+    {
+      icon: "forum",
+      label: "In Interview",
+      value: stats?.pipelineFunnel.interview ?? 0,
+      spark: sparkHeights(bucketByDate(timeline, stageMovedDates("interview"))),
+    },
+    {
+      icon: "mail",
+      label: "Offers Out",
+      value: stats?.pipelineFunnel.offer ?? 0,
+      spark: sparkHeights(bucketByDate(timeline, stageMovedDates("offer"))),
+    },
   ];
 
   return (
@@ -140,15 +181,22 @@ export default function RecruiterHomePage() {
                   {s.value}
                 </div>
                 <div className="flex items-end gap-[2px] h-7 shrink-0">
-                  {SPARK_BARS.map((h, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-[3px] rounded-[1px] ${
-                        idx >= 6 ? "bg-secondary-fixed-dim" : idx === 5 ? "bg-on-surface-variant/40" : "bg-outline-variant"
-                      }`}
-                      style={{ height: `${h}%` }}
-                    />
-                  ))}
+                  {s.spark.map((h, idx) => {
+                    const fromEnd = s.spark.length - 1 - idx;
+                    const tone =
+                      fromEnd < 2
+                        ? "bg-secondary-fixed-dim"
+                        : fromEnd === 2
+                          ? "bg-on-surface-variant/40"
+                          : "bg-outline-variant";
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-[3px] rounded-[1px] ${tone}`}
+                        style={{ height: `${h}%` }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -292,29 +340,58 @@ export default function RecruiterHomePage() {
                 Applicants will appear here as candidates apply.
               </p>
             ) : (
-              <div className="flex flex-col gap-3 mt-4">
-                {STAGE_ORDER.filter((stage) => stats.pipelineFunnel[stage]).map((stage) => {
-                  const count = stats.pipelineFunnel[stage] ?? 0;
-                  const max = Math.max(...Object.values(stats.pipelineFunnel));
-                  const pct = max > 0 ? (count / max) * 100 : 0;
-                  return (
-                    <div key={stage} className="flex items-center gap-3">
-                      <span className="text-xs font-body text-on-surface-variant w-[72px] shrink-0 truncate">
-                        {STAGE_LABELS[stage] ?? stage}
-                      </span>
-                      <div className="flex-1 h-2 bg-outline-variant rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-secondary-fixed-dim rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="font-mono text-xs text-on-surface w-8 text-right shrink-0">
-                        {count}
-                      </span>
+              (() => {
+                const stages = STAGE_ORDER.filter((stage) => stats.pipelineFunnel[stage]);
+                const total = stages.reduce((sum, stage) => sum + stats.pipelineFunnel[stage], 0);
+                return (
+                  <div className="mt-4">
+                    <div className="flex h-8 w-full rounded-md overflow-hidden gap-[2px]">
+                      {stages.map((stage) => {
+                        const count = stats.pipelineFunnel[stage];
+                        const pct = total > 0 ? (count / total) * 100 : 0;
+                        const tone = PIPELINE_TONES[stage as keyof typeof PIPELINE_TONES];
+                        const showLabel = pct >= 12;
+                        return (
+                          <div
+                            key={stage}
+                            className="h-full flex items-center justify-center first:rounded-l-[4px] last:rounded-r-[4px]"
+                            style={{ width: `${pct}%`, backgroundColor: tone.color }}
+                            title={`${STAGE_LABELS[stage] ?? stage}: ${count} (${Math.round(pct)}%)`}
+                          >
+                            {showLabel && (
+                              <span className="text-[11px] font-mono font-semibold text-on-surface">
+                                {count}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="flex flex-col gap-1.5 mt-3.5">
+                      {stages.map((stage) => {
+                        const count = stats.pipelineFunnel[stage];
+                        const pct = total > 0 ? (count / total) * 100 : 0;
+                        const tone = PIPELINE_TONES[stage as keyof typeof PIPELINE_TONES];
+                        return (
+                          <div key={stage} className="flex items-center gap-2 text-xs font-body">
+                            <span
+                              className="w-2.5 h-2.5 rounded-[3px] shrink-0"
+                              style={{ backgroundColor: tone.color }}
+                            />
+                            <span className="text-on-surface-variant flex-1 truncate">
+                              {STAGE_LABELS[stage] ?? stage}
+                            </span>
+                            <span className="font-mono text-on-surface">{count}</span>
+                            <span className="font-mono text-on-surface-variant w-9 text-right">
+                              {Math.round(pct)}%
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()
             )}
           </div>
 
@@ -350,8 +427,90 @@ export default function RecruiterHomePage() {
               </div>
             )}
           </div>
+
+          {/* Upcoming interviews */}
+          <UpcomingInterviewsCard />
         </div>
       </div>
+    </div>
+  );
+}
+
+function InterviewRow({ interview }: Readonly<{ interview: Interview }>) {
+  const { data: job } = useJob(interview.jobId);
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3.5 border-b border-outline-variant/60 last:border-b-0">
+      <div className="w-9 h-9 rounded-xl bg-tertiary-container/30 flex items-center justify-center shrink-0">
+        <span className="material-symbols-outlined text-on-tertiary-container" style={{ fontSize: "19px" }}>
+          video_call
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold font-body text-on-surface truncate flex items-center gap-1.5">
+          <span className="truncate">{interview.candidateEmail}</span>
+          {isRecentlyCreated(interview.createdAt) && (
+            <span className="shrink-0 text-[9.5px] font-label font-semibold px-1.5 py-0.5 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed">
+              New
+            </span>
+          )}
+        </p>
+        <p className="text-[11.5px] font-body text-on-surface-variant mt-0.5 truncate">
+          {job?.title ?? "Interview"} ·{" "}
+          {new Date(interview.scheduledAt).toLocaleString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
+      {interview.meetingLink ? (
+        <a
+          href={interview.meetingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 flex items-center gap-1.5 h-8 px-3 rounded-lg bg-secondary-fixed-dim text-on-secondary-fixed font-semibold font-body text-[11.5px] hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>videocam</span>
+          Join
+        </a>
+      ) : (
+        <span className="shrink-0 text-[11px] font-body text-on-surface-variant px-2">No link</span>
+      )}
+    </div>
+  );
+}
+
+function UpcomingInterviewsCard() {
+  const { data: interviews, isLoading } = useInterviews();
+
+  const upcoming =
+    interviews
+      ?.filter((i) => i.status === "scheduled" && new Date(i.scheduledAt) >= new Date())
+      .slice(0, 4) ?? [];
+
+  if (isLoading) {
+    return <div className="bg-surface-container-high border border-outline-variant rounded-xl animate-pulse h-32" />;
+  }
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <div className="bg-surface-container-high border border-outline-variant rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-[15px] border-b border-outline-variant">
+        <span className="text-sm font-semibold font-headline text-on-surface">Upcoming Interviews</span>
+        <Link
+          to={ROUTES.RECRUITER_INTERVIEWS}
+          className="text-xs font-bold font-label text-secondary-fixed-dim hover:underline"
+        >
+          View all
+        </Link>
+      </div>
+      {upcoming.map((interview) => (
+        <InterviewRow key={interview.id} interview={interview} />
+      ))}
     </div>
   );
 }
