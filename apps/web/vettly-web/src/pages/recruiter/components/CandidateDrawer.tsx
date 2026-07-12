@@ -12,6 +12,7 @@ import { PIPELINE_LABELS, PIPELINE_ORDER, PIPELINE_TONES } from "../../../utils/
 import { formatRelative } from "../../../utils/format";
 import { ROUTES } from "../../../router/routes";
 import type { JobSummary, PipelineStage, PipelineStageName } from "../../../types/job.types";
+import { ScheduleInterviewModal } from "./ScheduleInterviewModal";
 
 export function CandidateDrawer({
   jobId,
@@ -33,6 +34,7 @@ export function CandidateDrawer({
   const updateNotes = useUpdateNotes(jobId);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(entry.notes ?? "");
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
 
   const isLoading = profileLoading || summaryLoading;
 
@@ -71,7 +73,19 @@ export function CandidateDrawer({
     onMove("rejected");
   };
 
+  const canScheduleInterview = entry.stage !== "hired" && entry.stage !== "rejected";
+
   return (
+    <>
+    {showInterviewModal && (
+      <ScheduleInterviewModal
+        jobId={jobId}
+        applicationId={entry.applicationId}
+        candidateId={entry.candidateId}
+        candidateName={displayName}
+        onClose={() => setShowInterviewModal(false)}
+      />
+    )}
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="relative w-full max-w-[420px] h-full bg-surface-container border-l border-outline-variant flex flex-col">
@@ -226,6 +240,16 @@ export function CandidateDrawer({
               Send offer letter
             </a>
           )}
+          {canScheduleInterview && (
+            <button
+              type="button"
+              onClick={() => setShowInterviewModal(true)}
+              className="flex items-center justify-center gap-2 h-[42px] rounded-[10px] bg-tertiary-container/30 border border-tertiary-container/60 text-on-tertiary-container font-semibold font-body text-[13.5px] hover:bg-tertiary-container/50 transition-colors"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>video_call</span>
+              Schedule Interview
+            </button>
+          )}
           <div className="flex gap-2.5">
             <button
               type="button"
@@ -249,5 +273,6 @@ export function CandidateDrawer({
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", icon: "space_dashboard", to: ROUTES.RECRUITER },
   { label: "Jobs", icon: "work", to: ROUTES.RECRUITER_JOBS },
   { label: "Candidates", icon: "group", to: ROUTES.RECRUITER_CANDIDATES },
+  { label: "Interviews", icon: "video_call", to: ROUTES.RECRUITER_INTERVIEWS },
   { label: "Organization", icon: "apartment", to: ROUTES.RECRUITER_ORGANIZATION },
   { label: "Analytics", icon: "insights", to: ROUTES.RECRUITER_ANALYTICS },
   { label: "Bias report", icon: "balance", to: ROUTES.RECRUITER_BIAS_REPORT },
