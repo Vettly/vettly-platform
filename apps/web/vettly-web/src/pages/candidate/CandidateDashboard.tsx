@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", icon: "space_dashboard", to: ROUTES.CANDIDATE },
   { label: "Find jobs", icon: "search", to: ROUTES.CANDIDATE_JOBS },
   { label: "My applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
+  { label: "Interviews", icon: "video_call", to: ROUTES.CANDIDATE_INTERVIEWS },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];
 

@@ -8,6 +8,7 @@ import { ROUTES } from "../../router/routes";
 import type { Application } from "../../types/candidate.types";
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONES } from "../../utils/tones";
 import { PillBadge } from "../../components/PillBadge";
+import { UpcomingInterviews } from "./components/UpcomingInterviews";
 
 const SPARK_BARS: { key: string; height: number; className: string }[] = [
   { key: "b1", height: 45, className: "bg-outline-variant" },
@@ -291,6 +292,9 @@ export default function CandidateHomePage() {
               </div>
             </div>
           )}
+
+          {/* Upcoming interviews */}
+          <UpcomingInterviews />
 
           {/* CTA */}
           <Link
