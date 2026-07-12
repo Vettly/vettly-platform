@@ -46,6 +46,14 @@ namespace Vettly.CandidateService.Controllers
             return Ok(profile);
         }
 
+        [HttpGet("{candidateId:guid}/email")]
+        public async Task<IActionResult> GetCandidateEmail(Guid candidateId)
+        {
+            var profile = await _candidateService.GetProfileByIdAsync(candidateId);
+            if (profile is null) return NotFound(new { message = ProfileNotFoundMessage });
+            return Ok(new { email = profile.Email, userId = profile.UserId });
+        }
+
         [HttpGet("applications/{applicationId:guid}/summary")]
         public async Task<IActionResult> GetApplicationSummary(Guid applicationId)
         {
