@@ -22,6 +22,8 @@ import RecruiterCandidatesPage from "../pages/recruiter/RecruiterCandidatesPage"
 import RecruiterCandidateDetailPage from "../pages/recruiter/RecruiterCandidateDetailPage";
 import RecruiterAnalyticsPage from "../pages/recruiter/RecruiterAnalyticsPage";
 import RecruiterBiasReportPage from "../pages/recruiter/RecruiterBiasReportPage";
+import RecruiterInterviewsPage from "../pages/recruiter/RecruiterInterviewsPage";
+import CandidateInterviewsPage from "../pages/candidate/CandidateInterviewsPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -73,6 +75,7 @@ export const router = createBrowserRouter([
       { path: "applications", element: <CandidateApplicationsPage /> },
       { path: "applications/:applicationId", element: <CandidateApplicationDetailPage /> },
       { path: "profile", element: <CandidateProfilePage /> },
+      { path: "interviews", element: <CandidateInterviewsPage /> },
     ],
   },
   {
@@ -91,6 +94,7 @@ export const router = createBrowserRouter([
       { path: "candidates/:jobId/:applicationId", element: <RecruiterCandidateDetailPage /> },
       { path: "analytics", element: <RecruiterAnalyticsPage /> },
       { path: "bias-report", element: <RecruiterBiasReportPage /> },
+      { path: "interviews", element: <RecruiterInterviewsPage /> },
     ],
   },
   {

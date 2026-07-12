@@ -14,6 +14,9 @@ appsettings.Development.json
 **/venv/
 **/.env
 
+# Secrets
+services/secrets/*.json
+
 # General
 .DS_Store
 *.env
