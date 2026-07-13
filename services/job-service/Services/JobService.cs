@@ -12,13 +12,14 @@ public interface IJobService
     Task<JobResponse?>             GetJobAsync(Guid jobId);
     Task<List<JobSummaryResponse>> GetAllOpenJobsAsync(
         string? search, string? jobType, string? experienceLevel);
-    Task<List<JobSummaryResponse>> GetMyJobsAsync(Guid recruiterId);
+    Task<List<JobSummaryResponse>> GetMyJobsAsync(Guid recruiterId, string bearerToken);
     Task<JobResponse?>             UpdateJobAsync(Guid recruiterId,
-        Guid jobId, UpdateJobRequest req);
+        Guid jobId, UpdateJobRequest req, string bearerToken);
     Task<bool>                     UpdateJobStatusAsync(Guid recruiterId,
-        Guid jobId, string status);
+        Guid jobId, string status, string bearerToken);
     Task<bool>                     DeleteJobAsync(Guid recruiterId,
-        Guid jobId);
+        Guid jobId, string bearerToken);
+    Task<JobStatsResponse>          GetMyJobsStatsAsync(Guid recruiterId, string bearerToken);
 }
 
 public class JobService : IJobService
@@ -51,6 +52,9 @@ public class JobService : IJobService
             ExperienceLevel = req.ExperienceLevel,
             SalaryMin       = req.SalaryMin,
             SalaryMax       = req.SalaryMax,
+            WorkArrangement = req.WorkArrangement,
+            Benefits        = req.Benefits,
+            ApplicationDeadline = AsUtc(req.ApplicationDeadline),
             Status          = "draft",
         };
 
@@ -72,6 +76,7 @@ public class JobService : IJobService
     {
         var job = await _db.Jobs
             .Include(j => j.Skills)
+            .Include(j => j.PipelineStages)
             .FirstOrDefaultAsync(j => j.Id == jobId);
         return job is null ? null : MapToResponse(job);
     }
@@ -104,25 +109,39 @@ public class JobService : IJobService
     }
 
     public async Task<List<JobSummaryResponse>> GetMyJobsAsync(
-        Guid recruiterId)
+        Guid recruiterId, string bearerToken)
     {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var jobs = await _db.Jobs
             .Include(j => j.Skills)
             .Include(j => j.PipelineStages)
-            .Where(j => j.RecruiterId == recruiterId)
+            .Where(j => orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
 
         return jobs.Select(MapToSummary).ToList();
     }
 
-    public async Task<JobResponse?> UpdateJobAsync(
-        Guid recruiterId, Guid jobId, UpdateJobRequest req)
+    private async Task<Guid?> GetOrgIdAsync(string bearerToken)
     {
+        var org = await _orgClient.GetByRecruiterAsync(bearerToken);
+        return org?.Id;
+    }
+
+    public async Task<JobResponse?> UpdateJobAsync(
+        Guid recruiterId, Guid jobId, UpdateJobRequest req, string bearerToken)
+    {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
             .Include(j => j.Skills)
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .Include(j => j.PipelineStages)
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return null;
 
@@ -133,6 +152,9 @@ public class JobService : IJobService
         job.ExperienceLevel = req.ExperienceLevel ?? job.ExperienceLevel;
         job.SalaryMin       = req.SalaryMin       ?? job.SalaryMin;
         job.SalaryMax       = req.SalaryMax       ?? job.SalaryMax;
+        job.WorkArrangement = req.WorkArrangement ?? job.WorkArrangement;
+        job.Benefits        = req.Benefits        ?? job.Benefits;
+        job.ApplicationDeadline = AsUtc(req.ApplicationDeadline) ?? job.ApplicationDeadline;
         job.UpdatedAt       = DateTime.UtcNow;
 
         // update skills if provided
@@ -155,16 +177,19 @@ public class JobService : IJobService
     }
 
     public async Task<bool> UpdateJobStatusAsync(
-        Guid recruiterId, Guid jobId, string status)
+        Guid recruiterId, Guid jobId, string status, string bearerToken)
     {
         var validStatuses = new[]
             { "draft", "open", "closed", "archived" };
         if (!validStatuses.Contains(status))
             return false;
 
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return false;
 
@@ -174,11 +199,14 @@ public class JobService : IJobService
         return true;
     }
 
-    public async Task<bool> DeleteJobAsync(Guid recruiterId, Guid jobId)
+    public async Task<bool> DeleteJobAsync(Guid recruiterId, Guid jobId, string bearerToken)
     {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
         var job = await _db.Jobs
-            .FirstOrDefaultAsync(j =>
-                j.Id == jobId && j.RecruiterId == recruiterId);
+            .FirstOrDefaultAsync(j => j.Id == jobId && (orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId));
 
         if (job is null) return false;
 
@@ -186,6 +214,81 @@ public class JobService : IJobService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task<JobStatsResponse> GetMyJobsStatsAsync(Guid recruiterId, string bearerToken)
+    {
+        var orgId = await GetOrgIdAsync(bearerToken);
+
+        var jobs = await _db.Jobs
+            .Include(j => j.PipelineStages)
+            .Where(j => orgId.HasValue
+                ? j.OrganizationId == orgId
+                : j.RecruiterId == recruiterId)
+            .ToListAsync();
+
+        var funnel = new Dictionary<string, int>();
+        var perJob = new List<JobApplicantBreakdown>();
+        var appliedDates = new List<DateTime>();
+
+        foreach (var job in jobs)
+        {
+            var latestStages = job.PipelineStages
+                .GroupBy(p => p.ApplicationId)
+                .Select(g => g.OrderByDescending(p => p.MovedAt).First())
+                .ToList();
+
+            var stageBreakdown = new Dictionary<string, int>();
+            foreach (var stage in latestStages)
+            {
+                stageBreakdown[stage.Stage] = stageBreakdown.GetValueOrDefault(stage.Stage) + 1;
+                funnel[stage.Stage] = funnel.GetValueOrDefault(stage.Stage) + 1;
+            }
+
+            perJob.Add(new JobApplicantBreakdown
+            {
+                Id             = job.Id,
+                Title          = job.Title,
+                ApplicantCount = job.PipelineStages
+                    .Select(p => p.CandidateId)
+                    .Distinct()
+                    .Count(),
+                StageBreakdown = stageBreakdown,
+            });
+
+            appliedDates.AddRange(job.PipelineStages
+                .Where(p => p.Stage == "applied")
+                .GroupBy(p => p.ApplicationId)
+                .Select(g => g.OrderBy(p => p.MovedAt).First().MovedAt));
+        }
+
+        var weekStart = DateTime.UtcNow.Date.AddDays(-7 * 7);
+        var applicationsOverTime = new List<TimeSeriesPoint>();
+        for (var i = 0; i < 8; i++)
+        {
+            var rangeStart = weekStart.AddDays(7 * i);
+            var rangeEnd   = rangeStart.AddDays(7);
+            applicationsOverTime.Add(new TimeSeriesPoint
+            {
+                Date  = rangeStart,
+                Count = appliedDates.Count(d => d >= rangeStart && d < rangeEnd),
+            });
+        }
+
+        return new JobStatsResponse
+        {
+            TotalJobs            = jobs.Count,
+            OpenJobs             = jobs.Count(j => j.Status == "open"),
+            TotalApplicants      = perJob.Sum(p => p.ApplicantCount),
+            PipelineFunnel       = funnel,
+            PerJobBreakdown      = perJob,
+            ApplicationsOverTime = applicationsOverTime,
+        };
+    }
+
+    // Postgres requires UTC for "timestamp with time zone"; JSON dates without
+    // an offset deserialize with Kind=Unspecified, so mark them as UTC here.
+    private static DateTime? AsUtc(DateTime? dt) =>
+        dt is null ? null : DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
 
     // ── MAPPERS ───────────────────────────────────
     private static JobResponse MapToResponse(JobPosting j) => new()
@@ -202,8 +305,15 @@ public class JobService : IJobService
         SalaryMin       = j.SalaryMin,
         SalaryMax       = j.SalaryMax,
         Status          = j.Status,
+        ApplicantCount  = j.PipelineStages
+            .Select(p => p.CandidateId)
+            .Distinct()
+            .Count(),
         CreatedAt       = j.CreatedAt,
         UpdatedAt       = j.UpdatedAt,
+        WorkArrangement     = j.WorkArrangement,
+        Benefits            = j.Benefits,
+        ApplicationDeadline = j.ApplicationDeadline,
         Skills          = j.Skills.Select(s => new JobSkillResponse
         {
             Id         = s.Id,
@@ -228,6 +338,10 @@ public class JobService : IJobService
             .Distinct()
             .Count(),
         CreatedAt       = j.CreatedAt,
+        WorkArrangement     = j.WorkArrangement,
+        ApplicationDeadline = j.ApplicationDeadline,
+        Description         = j.Description,
+        Benefits            = j.Benefits,
         Skills          = j.Skills.Select(s => new JobSkillResponse
         {
             Id         = s.Id,

@@ -9,10 +9,14 @@ public interface IPipelineService
 {
     Task<PipelineStageResponse>       MoveToStageAsync(Guid recruiterId,
         Guid jobId, UpdatePipelineRequest req);
+    Task<PipelineStageResponse>       RegisterApplicationAsync(Guid jobId,
+        RegisterApplicationRequest req);
     Task<List<PipelineStageResponse>> GetPipelineAsync(Guid jobId,
         string? stage);
     Task<PipelineStageResponse?>      GetCandidateStageAsync(Guid jobId,
         Guid applicationId);
+    Task<PipelineStageResponse?>      UpdateNotesAsync(Guid recruiterId,
+        Guid jobId, Guid applicationId, string? notes);
 }
 
 public class PipelineService : IPipelineService
@@ -41,6 +45,29 @@ public class PipelineService : IPipelineService
             Stage         = req.Stage,
             Notes         = req.Notes,
             MovedBy       = recruiterId,
+        };
+
+        _db.PipelineStages.Add(stage);
+        await _db.SaveChangesAsync();
+        return MapStage(stage);
+    }
+
+    public async Task<PipelineStageResponse> RegisterApplicationAsync(
+        Guid jobId, RegisterApplicationRequest req)
+    {
+        var job = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == jobId)
+            ?? throw new KeyNotFoundException("Job not found");
+
+        var existing = await _db.PipelineStages
+            .FirstOrDefaultAsync(p => p.ApplicationId == req.ApplicationId);
+        if (existing is not null) return MapStage(existing);
+
+        var stage = new PipelineStage
+        {
+            JobId         = jobId,
+            ApplicationId = req.ApplicationId,
+            CandidateId   = req.CandidateId,
+            Stage         = "applied",
         };
 
         _db.PipelineStages.Add(stage);
@@ -79,6 +106,27 @@ public class PipelineService : IPipelineService
             .FirstOrDefaultAsync();
 
         return stage is null ? null : MapStage(stage);
+    }
+
+    public async Task<PipelineStageResponse?> UpdateNotesAsync(
+        Guid recruiterId, Guid jobId, Guid applicationId, string? notes)
+    {
+        var job = await _db.Jobs
+            .FirstOrDefaultAsync(j =>
+                j.Id == jobId && j.RecruiterId == recruiterId);
+        if (job is null) return null;
+
+        var stage = await _db.PipelineStages
+            .Where(p =>
+                p.JobId         == jobId &&
+                p.ApplicationId == applicationId)
+            .OrderByDescending(p => p.MovedAt)
+            .FirstOrDefaultAsync();
+        if (stage is null) return null;
+
+        stage.Notes = notes;
+        await _db.SaveChangesAsync();
+        return MapStage(stage);
     }
 
     private static PipelineStageResponse MapStage(PipelineStage s) => new()

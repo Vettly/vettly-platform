@@ -10,8 +10,20 @@ import NotFoundPage from "../pages/NotFoundPage";
 import CandidateDashboard from "../pages/candidate/CandidateDashboard";
 import CandidateHomePage from "../pages/candidate/CandidateHomePage";
 import CandidateApplicationsPage from "../pages/candidate/CandidateApplicationsPage";
+import CandidateApplicationDetailPage from "../pages/candidate/CandidateApplicationDetailPage";
 import CandidateProfilePage from "../pages/candidate/profile/CandidateProfilePage";
 import JobListingsPage from "../pages/candidate/JobListingsPage";
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
+import RecruiterHomePage from "../pages/recruiter/RecruiterHomePage";
+import RecruiterJobsPage from "../pages/recruiter/RecruiterJobsPage";
+import JobPipelinePage from "../pages/recruiter/JobPipelinePage";
+import RecruiterOrganizationPage from "../pages/recruiter/RecruiterOrganizationPage";
+import RecruiterCandidatesPage from "../pages/recruiter/RecruiterCandidatesPage";
+import RecruiterCandidateDetailPage from "../pages/recruiter/RecruiterCandidateDetailPage";
+import RecruiterAnalyticsPage from "../pages/recruiter/RecruiterAnalyticsPage";
+import RecruiterBiasReportPage from "../pages/recruiter/RecruiterBiasReportPage";
+import RecruiterInterviewsPage from "../pages/recruiter/RecruiterInterviewsPage";
+import CandidateInterviewsPage from "../pages/candidate/CandidateInterviewsPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -61,16 +73,29 @@ export const router = createBrowserRouter([
       { index: true, element: <CandidateHomePage /> },
       { path: "jobs", element: <JobListingsPage /> },
       { path: "applications", element: <CandidateApplicationsPage /> },
+      { path: "applications/:applicationId", element: <CandidateApplicationDetailPage /> },
       { path: "profile", element: <CandidateProfilePage /> },
+      { path: "interviews", element: <CandidateInterviewsPage /> },
     ],
   },
   {
     path: ROUTES.RECRUITER,
     element: (
       <RoleRoute allowedRole={UserRole.Recruiter}>
-        <div>Recruiter Dashboard — coming soon</div>
+        <RecruiterDashboard />
       </RoleRoute>
     ),
+    children: [
+      { index: true, element: <RecruiterHomePage /> },
+      { path: "jobs", element: <RecruiterJobsPage /> },
+      { path: "jobs/:jobId/pipeline", element: <JobPipelinePage /> },
+      { path: "organization", element: <RecruiterOrganizationPage /> },
+      { path: "candidates", element: <RecruiterCandidatesPage /> },
+      { path: "candidates/:jobId/:applicationId", element: <RecruiterCandidateDetailPage /> },
+      { path: "analytics", element: <RecruiterAnalyticsPage /> },
+      { path: "bias-report", element: <RecruiterBiasReportPage /> },
+      { path: "interviews", element: <RecruiterInterviewsPage /> },
+    ],
   },
   {
     path: ROUTES.UNAUTHORIZED,

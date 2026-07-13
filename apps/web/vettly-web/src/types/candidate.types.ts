@@ -75,6 +75,19 @@ export interface Application {
   updatedAt: string;
 }
 
+export interface ApplicationSummary {
+  id: string;
+  jobId: string;
+  resumeId: string;
+  status: ApplicationStatus;
+  aiScore: number | null;
+  biasFlagged: boolean;
+  matchScore: number | null;
+  skillGap: string | null;
+  appliedAt: string;
+  updatedAt: string;
+}
+
 export interface CreateProfileRequest {
   headline?: string;
   bio?: string;

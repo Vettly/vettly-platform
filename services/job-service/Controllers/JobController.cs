@@ -10,12 +10,17 @@ namespace Vettly.JobService.Controllers;
 [Route("api/jobs")]
 public class JobController : ControllerBase
 {
+    private const string BearerPrefix = "Bearer ";
+
     private readonly IJobService _jobService;
 
     public JobController(IJobService jobService)
     {
         _jobService = jobService;
     }
+
+    private string BearerToken =>
+        Request.Headers.Authorization.ToString().Replace(BearerPrefix, "");
 
     // ── PUBLIC ENDPOINTS (candidates can browse) ──
 
@@ -45,8 +50,22 @@ public class JobController : ControllerBase
     public async Task<IActionResult> GetMyJobs()
     {
         var recruiterId = User.GetUserId();
-        var jobs        = await _jobService.GetMyJobsAsync(recruiterId);
+        var bearerToken = BearerToken;
+        var jobs        = await _jobService.GetMyJobsAsync(recruiterId, bearerToken);
         return Ok(jobs);
+    }
+
+    [HttpGet("my-jobs/stats")]
+    [Authorize]
+    public async Task<IActionResult> GetMyJobsStats()
+    {
+        if (User.GetRole() != "recruiter")
+            return Forbid();
+
+        var recruiterId = User.GetUserId();
+        var bearerToken = BearerToken;
+        var stats       = await _jobService.GetMyJobsStatsAsync(recruiterId, bearerToken);
+        return Ok(stats);
     }
 
     [HttpPost]
@@ -58,7 +77,7 @@ public class JobController : ControllerBase
             return Forbid();
 
         var recruiterId  = User.GetUserId();
-        var bearerToken  = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        var bearerToken  = BearerToken;
 
         try
         {
@@ -80,8 +99,9 @@ public class JobController : ControllerBase
             return Forbid();
 
         var recruiterId = User.GetUserId();
+        var bearerToken = BearerToken;
         var job         = await _jobService
-            .UpdateJobAsync(recruiterId, id, req);
+            .UpdateJobAsync(recruiterId, id, req, bearerToken);
 
         if (job is null) return NotFound(new { message = "Job not found" });
         return Ok(job);
@@ -96,8 +116,9 @@ public class JobController : ControllerBase
             return Forbid();
 
         var recruiterId = User.GetUserId();
+        var bearerToken = BearerToken;
         var updated     = await _jobService
-            .UpdateJobStatusAsync(recruiterId, id, req.Status);
+            .UpdateJobStatusAsync(recruiterId, id, req.Status, bearerToken);
 
         if (!updated)
             return BadRequest(new { message = "Invalid status or job not found" });
@@ -113,7 +134,8 @@ public class JobController : ControllerBase
             return Forbid();
 
         var recruiterId = User.GetUserId();
-        var deleted     = await _jobService.DeleteJobAsync(recruiterId, id);
+        var bearerToken = BearerToken;
+        var deleted     = await _jobService.DeleteJobAsync(recruiterId, id, bearerToken);
 
         if (!deleted) return NotFound(new { message = "Job not found" });
         return NoContent();

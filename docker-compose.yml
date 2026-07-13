@@ -70,7 +70,7 @@ services:
       - Jwt__Issuer=vettly-auth-service
       - Jwt__Audience=vettly-platform
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
-      - OrganizationService__BaseUrl=http://organization-service:8080
+      - OrganizationService__BaseUrl=${ORGANIZATION_SERVICE_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -110,9 +110,53 @@ services:
       - R2__BucketName=${R2_BUCKET_NAME}
       - R2__PublicUrl=${R2_PUBLIC_URL}
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - JobService__BaseUrl=${JOB_SERVICE_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy
+
+  interview-service:
+    build:
+      context: ./services
+      dockerfile: interview-service/Dockerfile
+    container_name: vettly-interview
+    ports:
+      - "5054:8080"
+    environment:
+      - ConnectionStrings__InterviewDb=Host=postgres;Database=vettly_interview;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - CandidateService__BaseUrl=http://candidate-service:8080
+      - JobService__BaseUrl=http://job-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      candidate-service:
+        condition: service_started
+      job-service:
+        condition: service_started
+
+  matching-service:
+    build:
+      context: ./services
+      dockerfile: matching-service/Dockerfile
+    container_name: vettly-matching
+    ports:
+      - "5055:8080"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ISSUER=vettly-auth-service
+      - JWT_AUDIENCE=vettly-platform
+      - CANDIDATE_SERVICE_BASE_URL=http://candidate-service:8080
+      - JOB_SERVICE_BASE_URL=http://job-service:8080
+      - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      candidate-service:
+        condition: service_started
+      job-service:
+        condition: service_started
 
 volumes:
   postgres_data:

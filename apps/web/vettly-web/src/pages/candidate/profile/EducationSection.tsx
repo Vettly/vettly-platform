@@ -9,7 +9,7 @@ import {
   useUpdateEducation,
   useDeleteEducation,
 } from "../../../api/candidate/candidate.api";
-import { SectionCard } from "../components/SectionCard";
+import { ProfilePanel } from "../components/ProfilePanel";
 import { formatMonthYear, isoToMonth, monthToIso } from "../../../utils/format";
 import type { Education } from "../../../types/candidate.types";
 
@@ -188,9 +188,8 @@ export function EducationSection() {
   };
 
   return (
-    <SectionCard
+    <ProfilePanel
       title="Education"
-      icon="school"
       action={
         <button
           onClick={() => { setShowAddForm(true); setEditingId(null); }}
@@ -282,6 +281,6 @@ export function EducationSection() {
           ))
         )}
       </div>
-    </SectionCard>
+    </ProfilePanel>
   );
 }

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import z from "zod";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { VettlyLogo } from "../../components/VettlyLogo";
 import { ROUTES } from "../../router/routes";
 import { useRegister } from "../../api/auth/auth.api";
 import { useAuthStore } from "../../stores/authStore";
@@ -55,14 +56,11 @@ export default function RegisterPage() {
       {/* ── Left panel: editorial dark branding ── */}
       <div className="hidden lg:flex lg:w-1/2 editorial-gradient flex-col justify-between p-12 relative overflow-hidden">
         {/* Ambient glow blobs */}
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-10 right-0 w-72 h-72 bg-secondary-fixed/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary-fixed-dim/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 right-0 w-72 h-72 bg-secondary-fixed-dim/10 rounded-full blur-3xl pointer-events-none" />
 
-        <Link
-          to={ROUTES.ROOT}
-          className="text-2xl font-black tracking-tighter font-headline text-white relative z-10"
-        >
-          Vettly
+        <Link to={ROUTES.ROOT} className="relative z-10">
+          <VettlyLogo textClassName="text-xl text-white" />
         </Link>
 
         <div className="relative z-10 space-y-8">
@@ -129,11 +127,8 @@ export default function RegisterPage() {
       {/* ── Right panel: form ── */}
       <div className="flex-1 relative flex flex-col justify-center items-center px-6 py-12 bg-surface overflow-y-auto">
         {/* Mobile logo */}
-        <Link
-          to={ROUTES.ROOT}
-          className="lg:hidden text-2xl font-black tracking-tighter font-headline text-primary mb-10"
-        >
-          Vettly
+        <Link to={ROUTES.ROOT} className="lg:hidden mb-10">
+          <VettlyLogo />
         </Link>
 
         <div className="absolute top-4 right-4">

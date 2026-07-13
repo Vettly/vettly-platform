@@ -3,13 +3,17 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useLogout } from "../../api/auth/auth.api";
 import { useProfile } from "../../api/candidate/candidate.api";
+import { useJobs } from "../../api/job/job.api";
+import { useNavBadgeCount } from "../../hooks/useNavBadgeCount";
 import { ROUTES } from "../../router/routes";
+import { VettlyLogo } from "../../components/VettlyLogo";
 import defaultAvatar from "../../assets/user-avatar.png";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: "home", to: ROUTES.CANDIDATE },
-  { label: "Jobs", icon: "work_outline", to: ROUTES.CANDIDATE_JOBS },
-  { label: "Applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
+  { label: "Dashboard", icon: "space_dashboard", to: ROUTES.CANDIDATE },
+  { label: "Find jobs", icon: "search", to: ROUTES.CANDIDATE_JOBS },
+  { label: "My applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
+  { label: "Interviews", icon: "video_call", to: ROUTES.CANDIDATE_INTERVIEWS },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];
 
@@ -21,6 +25,11 @@ export default function CandidateDashboard() {
   const { user } = useAuthStore();
   const logout = useLogout();
   const { data: profile } = useProfile();
+  const { data: jobs } = useJobs();
+  const newJobsCount = useNavBadgeCount(
+    "candidateFindJobs",
+    (jobs ?? []).map((job) => job.createdAt)
+  );
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -55,20 +64,14 @@ export default function CandidateDashboard() {
       >
         {/* Logo row */}
         <div className="flex items-center justify-between px-4 py-5 border-b border-outline-variant">
-          {!collapsed && (
-            <Link to={ROUTES.CANDIDATE} className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary" style={{ fontSize: "24px" }}>
-                auto_awesome
-              </span>
-              <span className="font-headline font-extrabold text-xl text-on-surface tracking-tight">
-                Vettly
-              </span>
+          {collapsed ? (
+            <Link to={ROUTES.CANDIDATE} className="mx-auto">
+              <VettlyLogo size={30} textClassName="hidden" />
             </Link>
-          )}
-          {collapsed && (
-            <span className="material-symbols-outlined text-secondary mx-auto" style={{ fontSize: "24px" }}>
-              auto_awesome
-            </span>
+          ) : (
+            <Link to={ROUTES.CANDIDATE}>
+              <VettlyLogo size={30} />
+            </Link>
           )}
           <button
             onClick={() => setCollapsed((c) => !c)}
@@ -90,12 +93,12 @@ export default function CandidateDashboard() {
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
                 className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors
+                  flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 transition-colors
                   ${collapsed ? "justify-center" : ""}
                   ${
                     active
-                      ? "bg-secondary-container text-on-secondary-container font-bold"
-                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+                      ? "bg-secondary-fixed-dim/10 border-secondary-fixed-dim text-secondary-fixed-dim font-semibold"
+                      : "border-transparent text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface"
                   }
                 `}
                 title={collapsed ? item.label : undefined}
@@ -105,6 +108,11 @@ export default function CandidateDashboard() {
                 </span>
                 {!collapsed && (
                   <span className="font-body text-sm">{item.label}</span>
+                )}
+                {!collapsed && item.to === ROUTES.CANDIDATE_JOBS && newJobsCount > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {newJobsCount}
+                  </span>
                 )}
               </Link>
             );
@@ -163,9 +171,7 @@ export default function CandidateDashboard() {
               menu
             </span>
           </button>
-          <span className="font-headline font-extrabold text-lg text-on-surface">
-            Vettly
-          </span>
+          <VettlyLogo size={28} textClassName="text-lg text-on-surface" />
         </header>
 
         {/* Page content */}

@@ -29,6 +29,12 @@ namespace Vettly.JobService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("ApplicationDeadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Benefits")
+                        .HasColumnType("text");
+
                     b.Property<string>("CompanyName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -77,6 +83,9 @@ namespace Vettly.JobService.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WorkArrangement")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

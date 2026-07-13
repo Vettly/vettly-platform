@@ -8,5 +8,6 @@
             IFormFile file, Guid userId);
         Task DeleteFileAsync(string key);
         string GetPublicUrl(string key);
+        string? RefreshUrl(string? url);
     }
 }

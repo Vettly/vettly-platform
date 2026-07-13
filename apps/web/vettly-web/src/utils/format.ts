@@ -6,6 +6,14 @@ export function formatDate(iso: string): string {
   });
 }
 
+export function formatRelative(iso: string): string {
+  const diffDays = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return "today";
+  if (diffDays < 7) return `${diffDays}d`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w`;
+  return `${Math.floor(diffDays / 30)}mo`;
+}
+
 export function formatMonthYear(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",

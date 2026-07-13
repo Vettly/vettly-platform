@@ -12,8 +12,13 @@ public class JobResponse
     public int?     SalaryMin       { get; set; }
     public int?     SalaryMax       { get; set; }
     public string   Status          { get; set; } = string.Empty;
+    public int      ApplicantCount  { get; set; }
     public DateTime CreatedAt       { get; set; }
     public DateTime UpdatedAt       { get; set; }
+
+    public string?   WorkArrangement     { get; set; }
+    public string?   Benefits            { get; set; }
+    public DateTime? ApplicationDeadline { get; set; }
 
     public Guid?                  OrganizationId { get; set; }
     public string?                CompanyName    { get; set; }

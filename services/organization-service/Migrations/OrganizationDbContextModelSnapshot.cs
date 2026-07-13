@@ -29,6 +29,9 @@ namespace Vettly.OrganizationService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CompanySize")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -39,6 +42,16 @@ namespace Vettly.OrganizationService.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("JoinCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
                     b.Property<string>("LogoUrl")
                         .HasColumnType("text");
 
@@ -47,11 +60,17 @@ namespace Vettly.OrganizationService.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("TwitterUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("Website")
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("JoinCode")
+                        .IsUnique();
 
                     b.ToTable("Organizations", "organizations");
                 });

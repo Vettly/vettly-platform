@@ -14,10 +14,15 @@ public class JobPosting
     //junior  | mid | senior
     public int? SalaryMin { get; set; }
     public int? SalaryMax { get; set; }
-    public string Status { get; set; } = "draft"; 
+    public string Status { get; set; } = "draft";
     // draft | Open | Closed | archived
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public string? WorkArrangement { get; set; }
+    // onsite | remote | hybrid
+    public string? Benefits { get; set; }
+    public DateTime? ApplicationDeadline { get; set; }
 
     public Guid?   OrganizationId { get; set; }
     public string? CompanyName    { get; set; }
