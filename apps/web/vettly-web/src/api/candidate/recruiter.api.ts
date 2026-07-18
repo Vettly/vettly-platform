@@ -37,6 +37,12 @@ export const useApplicationSummary = (applicationId: string) =>
       return res.data;
     },
     enabled: !!applicationId,
-    refetchInterval: (query) =>
-      query.state.data?.aiScore == null ? 3000 : false,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data?.aiScore != null) return false;
+      const appliedAt = data?.appliedAt ? new Date(data.appliedAt).getTime() : null;
+      if (appliedAt && Date.now() - appliedAt > 2 * 60 * 1000) return false;
+      return 3000;
+    },
   });
