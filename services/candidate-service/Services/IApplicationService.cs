@@ -1,4 +1,5 @@
-﻿using Vettly.Shared.DTOs.Candidate;
+﻿using Vettly.CandidateService.DTOs;
+using Vettly.Shared.DTOs.Candidate;
 
 namespace Vettly.CandidateService.Services
 {
@@ -10,5 +11,7 @@ namespace Vettly.CandidateService.Services
         Task<ApplicationResponse?> GetApplicationAsync(Guid userId,
             Guid applicationId);
         Task<ApplicationResponse?> GetApplicationByIdAsync(Guid applicationId);
+        Task UpdateScreeningResultAsync(Guid applicationId, ScreeningResultRequest req);
+        Task<List<JobPreviewScore>> GetPreviewScoresAsync(Guid userId, List<JobPreviewInfo> jobs);
     }
 }

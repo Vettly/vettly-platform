@@ -14,6 +14,7 @@ import type {
   SkillRequest,
   UpdateProfileRequest,
 } from "../../types/candidate.types";
+import type { JobSummary } from "../../types/job.types";
 
 const client = createClient(import.meta.env.VITE_CANDIDATE_API_URL);
 
@@ -306,6 +307,11 @@ export const useApplications = () =>
       );
       return res.data;
     },
+    refetchInterval: (query) => {
+      const apps = query.state.data;
+      if (!apps?.length) return false;
+      return apps.some((a) => a.aiScore == null) ? 3000 : false;
+    },
   });
 
 export const useApplication = (id: string) =>
@@ -318,7 +324,40 @@ export const useApplication = (id: string) =>
       return res.data;
     },
     enabled: !!id,
+    refetchInterval: (query) =>
+      query.state.data?.aiScore == null ? 3000 : false,
   });
+
+export interface JobPreviewScore {
+  jobId: string;
+  aiScore: number;
+  matchScore: number;
+}
+
+export const usePreviewScores = (jobs: JobSummary[]) => {
+  const stableKey = jobs
+    .map((j) => j.id)
+    .sort((a, b) => a.localeCompare(b))
+    .join(",");
+  return useQuery({
+    queryKey: ["candidate", "preview-scores", stableKey],
+    queryFn: async () => {
+      const body = jobs.map((j) => ({
+        id: j.id,
+        description: j.description ?? "",
+        requiredSkills: (j.skills ?? []).filter((s) => s.isRequired).map((s) => s.name),
+        optionalSkills: (j.skills ?? []).filter((s) => !s.isRequired).map((s) => s.name),
+      }));
+      const res = await client.post<JobPreviewScore[]>(
+        CANDIDATE_ENDPOINTS.PREVIEW_SCORES,
+        body
+      );
+      return new Map(res.data.map((s) => [s.jobId, Math.round(s.matchScore)]));
+    },
+    enabled: jobs.length > 0,
+    staleTime: 30 * 60 * 1000,
+  });
+};
 
 export const useApplyToJob = () => {
   const qc = useQueryClient();
