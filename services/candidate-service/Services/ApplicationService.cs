@@ -5,6 +5,7 @@ using Vettly.CandidateService.Data;
 using Vettly.CandidateService.DTOs;
 using Vettly.CandidateService.Models;
 using Vettly.Shared.DTOs.Candidate;
+using Vettly.Shared.DTOs.Events;
 
 namespace Vettly.CandidateService.Services
 {
@@ -14,6 +15,7 @@ namespace Vettly.CandidateService.Services
         private readonly JobClient _jobClient;
         private readonly ScreeningClient _screeningClient;
         private readonly IMemoryCache _cache;
+        private readonly RedisEventPublisher _eventPublisher;
         private readonly string _selfUrl;
         private readonly ILogger<ApplicationService> _logger;
 
@@ -22,6 +24,7 @@ namespace Vettly.CandidateService.Services
             JobClient jobClient,
             ScreeningClient screeningClient,
             IMemoryCache cache,
+            RedisEventPublisher eventPublisher,
             IConfiguration configuration,
             ILogger<ApplicationService> logger)
         {
@@ -29,6 +32,7 @@ namespace Vettly.CandidateService.Services
             _jobClient = jobClient;
             _screeningClient = screeningClient;
             _cache = cache;
+            _eventPublisher = eventPublisher;
             _selfUrl = configuration["CandidateService:SelfUrl"]
                 ?? "http://vettly-candidate:8080";
             _logger = logger;
@@ -64,6 +68,14 @@ namespace Vettly.CandidateService.Services
 
             _db.Applications.Add(application);
             await _db.SaveChangesAsync();
+
+            await _eventPublisher.PublishAsync(DomainEventTypes.ApplicationReceived, new ApplicationReceivedEvent
+            {
+                ApplicationId = application.Id,
+                JobId = req.JobId,
+                CandidateProfileId = profile.Id,
+                CandidateName = $"{profile.FirstName} {profile.LastName}",
+            });
 
             try
             {

@@ -69,10 +69,13 @@ services:
       - Jwt__SecretKey=${JWT_SECRET}
       - Jwt__Issuer=vettly-auth-service
       - Jwt__Audience=vettly-platform
+      - Redis__ConnectionString=redis:6379
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
       - OrganizationService__BaseUrl=${ORGANIZATION_SERVICE_BASE_URL}
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       organization-service:
         condition: service_started
@@ -109,6 +112,7 @@ services:
       - R2__SecretKey=${R2_SECRET_KEY}
       - R2__BucketName=${R2_BUCKET_NAME}
       - R2__PublicUrl=${R2_PUBLIC_URL}
+      - Redis__ConnectionString=redis:6379
       - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
       - JobService__BaseUrl=${JOB_SERVICE_BASE_URL}
       - ScreeningService__BaseUrl=http://vettly-screening:8000
@@ -116,8 +120,33 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       screening-service:
         condition: service_started
+
+  messaging-service:
+    build:
+      context: ./services
+      dockerfile: messaging-service/Dockerfile
+    container_name: vettly-messaging
+    ports:
+      - "5055:8080"
+    environment:
+      - ConnectionStrings__MessagingDb=Host=postgres;Database=vettly_messaging;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - Redis__ConnectionString=redis:6379
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - JobService__BaseUrl=${JOB_SERVICE_BASE_URL}
+      - CandidateService__BaseUrl=http://vettly-candidate:8080
+      - AuthService__BaseUrl=http://vettly-auth:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   screening-service:
     build:

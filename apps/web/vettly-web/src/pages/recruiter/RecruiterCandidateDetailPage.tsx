@@ -10,6 +10,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { formatDate, formatMonthYear } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
 import { parseSkillGap } from "../../types/candidate.types";
+import { buildMessagesLink } from "../../utils/messagingLinks";
 
 export default function RecruiterCandidateDetailPage() {
   const { jobId = "", applicationId = "" } = useParams<{ jobId: string; applicationId: string }>();
@@ -55,6 +56,13 @@ export default function RecruiterCandidateDetailPage() {
             {profile?.location ? ` · ${profile.location}` : ""}
           </p>
         </div>
+        <Link
+          to={buildMessagesLink("recruiter", applicationId)}
+          className="flex items-center gap-2 h-9 px-3.5 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors shrink-0 ml-auto"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>forum</span>
+          <span>Message candidate</span>
+        </Link>
       </div>
 
       {isLoading ? (

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text;
 using Vettly.CandidateService.Data;
 using Vettly.CandidateService.Services;
@@ -12,9 +13,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<CandidateDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CandidateDb")));
 
+var redisConfig = ConfigurationOptions.Parse(builder.Configuration["Redis:ConnectionString"]!);
+redisConfig.AbortOnConnectFail = false;
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConfig));
+
 builder.Services.AddScoped<IS3Service, S3Service>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<RedisEventPublisher>();
 
 builder.Services.AddHttpClient<JobClient>(client =>
 {
