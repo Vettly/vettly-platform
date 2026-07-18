@@ -6,12 +6,16 @@ import { ThemeToggle } from "../../components/ThemeToggle";
 import { VettlyLogo } from "../../components/VettlyLogo";
 import { ROUTES } from "../../router/routes";
 import { useNewApplicantsCount } from "../../hooks/useNewApplicantsCount";
+import { useMessagingHub } from "../../hooks/useMessagingHub";
+import { useUnreadSummary } from "../../api/messaging/messaging.api";
+import { NotificationBell } from "../../components/NotificationBell";
 import defaultAvatar from "../../assets/user-avatar.png";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: "space_dashboard", to: ROUTES.RECRUITER },
   { label: "Jobs", icon: "work", to: ROUTES.RECRUITER_JOBS },
   { label: "Candidates", icon: "group", to: ROUTES.RECRUITER_CANDIDATES },
+  { label: "Messages", icon: "chat_bubble", to: ROUTES.RECRUITER_MESSAGES },
   { label: "Organization", icon: "apartment", to: ROUTES.RECRUITER_ORGANIZATION },
   { label: "Analytics", icon: "insights", to: ROUTES.RECRUITER_ANALYTICS },
   { label: "Bias report", icon: "balance", to: ROUTES.RECRUITER_BIAS_REPORT },
@@ -25,6 +29,9 @@ export default function RecruiterDashboard() {
   const { user } = useAuthStore();
   const logout = useLogout();
   const newApplicantsCount = useNewApplicantsCount();
+  useMessagingHub();
+  const { data: unreadSummary } = useUnreadSummary();
+  const unreadMessages = unreadSummary?.messages ?? 0;
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -109,6 +116,11 @@ export default function RecruiterDashboard() {
                     {newApplicantsCount}
                   </span>
                 )}
+                {!collapsed && item.to === ROUTES.RECRUITER_MESSAGES && unreadMessages > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {unreadMessages}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -170,7 +182,10 @@ export default function RecruiterDashboard() {
             </span>
           </button>
           <VettlyLogo size={28} textClassName="text-lg text-on-surface" />
-          <ThemeToggle className="ml-auto" />
+          <div className="ml-auto flex items-center gap-1">
+            <NotificationBell />
+            <ThemeToggle />
+          </div>
         </header>
 
         {/* Page content */}

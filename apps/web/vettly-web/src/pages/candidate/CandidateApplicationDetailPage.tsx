@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useApplication } from "../../api/candidate/candidate.api";
 import { useApplicationStage, useJob } from "../../api/job/job.api";
 import { PillBadge } from "../../components/PillBadge";
+import { buildMessagesLink } from "../../utils/messagingLinks";
 import { PIPELINE_LABELS, PIPELINE_ORDER, PIPELINE_TONES } from "../../utils/tones";
 import { formatDate } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
@@ -70,6 +71,14 @@ export default function CandidateApplicationDetailPage() {
         </div>
         <PillBadge tone={tone} label={PIPELINE_LABELS[stage]} />
       </div>
+
+      <Link
+        to={buildMessagesLink("candidate", application.id)}
+        className="flex items-center justify-center gap-2 h-11 rounded-xl bg-surface-container-high border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container transition-colors"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>forum</span>
+        <span>Message recruiter</span>
+      </Link>
 
       {/* Status timeline */}
       <div className="bg-surface-container-high border border-outline-variant rounded-xl p-6">

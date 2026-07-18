@@ -10,6 +10,7 @@ export const ROUTES = {
   CANDIDATE_APPLICATIONS: "/candidate/applications",
   CANDIDATE_APPLICATION_DETAIL: (id: string) => `/candidate/applications/${id}`,
   CANDIDATE_PROFILE: "/candidate/profile",
+  CANDIDATE_MESSAGES: "/candidate/messages",
   RECRUITER: "/recruiter",
   RECRUITER_JOBS: "/recruiter/jobs",
   RECRUITER_JOB_PIPELINE: (id: string) => `/recruiter/jobs/${id}/pipeline`,
@@ -19,5 +20,6 @@ export const ROUTES = {
     `/recruiter/candidates/${jobId}/${applicationId}`,
   RECRUITER_ANALYTICS: "/recruiter/analytics",
   RECRUITER_BIAS_REPORT: "/recruiter/bias-report",
+  RECRUITER_MESSAGES: "/recruiter/messages",
   UNAUTHORIZED: "/unauthorized",
 } as const;

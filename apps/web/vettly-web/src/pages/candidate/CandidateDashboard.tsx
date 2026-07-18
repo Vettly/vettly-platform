@@ -5,14 +5,18 @@ import { useLogout } from "../../api/auth/auth.api";
 import { useProfile } from "../../api/candidate/candidate.api";
 import { useJobs } from "../../api/job/job.api";
 import { useNavBadgeCount } from "../../hooks/useNavBadgeCount";
+import { useMessagingHub } from "../../hooks/useMessagingHub";
+import { useUnreadSummary } from "../../api/messaging/messaging.api";
 import { ROUTES } from "../../router/routes";
 import { VettlyLogo } from "../../components/VettlyLogo";
+import { NotificationBell } from "../../components/NotificationBell";
 import defaultAvatar from "../../assets/user-avatar.png";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: "space_dashboard", to: ROUTES.CANDIDATE },
   { label: "Find jobs", icon: "search", to: ROUTES.CANDIDATE_JOBS },
   { label: "My applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
+  { label: "Messages", icon: "chat_bubble", to: ROUTES.CANDIDATE_MESSAGES },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];
 
@@ -29,6 +33,9 @@ export default function CandidateDashboard() {
     "candidateFindJobs",
     (jobs ?? []).map((job) => job.createdAt)
   );
+  useMessagingHub();
+  const { data: unreadSummary } = useUnreadSummary();
+  const unreadMessages = unreadSummary?.messages ?? 0;
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -113,6 +120,11 @@ export default function CandidateDashboard() {
                     {newJobsCount}
                   </span>
                 )}
+                {!collapsed && item.to === ROUTES.CANDIDATE_MESSAGES && unreadMessages > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {unreadMessages}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -171,6 +183,9 @@ export default function CandidateDashboard() {
             </span>
           </button>
           <VettlyLogo size={28} textClassName="text-lg text-on-surface" />
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
         </header>
 
         {/* Page content */}

@@ -8,6 +8,7 @@ import { ROUTES } from "../../router/routes";
 import type { Application } from "../../types/candidate.types";
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONES } from "../../utils/tones";
 import { PillBadge } from "../../components/PillBadge";
+import { NotificationBell } from "../../components/NotificationBell";
 
 const SPARK_BARS: { key: string; height: number; className: string }[] = [
   { key: "b1", height: 45, className: "bg-outline-variant" },
@@ -133,17 +134,20 @@ export default function CandidateHomePage() {
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-[18px]">
       {/* Header */}
-      <div>
-        <p className="font-mono text-[11px] tracking-[0.12em] uppercase text-secondary-fixed-dim mb-1.5">
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-        <h1 className="text-[23px] font-semibold font-headline text-on-surface tracking-tight">
-          Welcome back, {user?.firstName}
-        </h1>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="font-mono text-[11px] tracking-[0.12em] uppercase text-secondary-fixed-dim mb-1.5">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <h1 className="text-[23px] font-semibold font-headline text-on-surface tracking-tight">
+            Welcome back, {user?.firstName}
+          </h1>
+        </div>
+        <NotificationBell />
       </div>
 
       {/* Stats row */}

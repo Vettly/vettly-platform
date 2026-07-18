@@ -3,6 +3,7 @@ import { useAuthStore } from "../../stores/authStore"
 import type { AuthResponse, LoginRequest, RegisterRequest } from "../../types/auth.types"
 import { createClient } from "../client"
 import { AUTH_ENDPOINTS } from "./endpoints"
+import { stopMessagingConnection } from "../messaging/connection"
 
 const client = createClient(import.meta.env.VITE_AUTH_API_URL)
 
@@ -60,9 +61,11 @@ export const useLogout = () => {
       await client.post(AUTH_ENDPOINTS.LOGOUT)
     },
     onSuccess: () => {
+      stopMessagingConnection().catch(() => {})
       logout()
     },
     onError: () => {
+      stopMessagingConnection().catch(() => {})
       logout()
     },
   })

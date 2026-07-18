@@ -6,6 +6,7 @@ import { useMyOrganization } from "../../api/organization/organization.api";
 import { useRecruiterCandidates } from "../../hooks/useRecruiterCandidates";
 import { EmptyState } from "../../components/EmptyState";
 import { PillBadge } from "../../components/PillBadge";
+import { NotificationBell } from "../../components/NotificationBell";
 import { PIPELINE_LABELS, PIPELINE_TONES } from "../../utils/tones";
 import { formatRelative } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
@@ -84,6 +85,7 @@ export default function RecruiterHomePage() {
           </h1>
         </div>
         <div className="flex items-center gap-2.5">
+          <NotificationBell />
           <div className="flex items-center gap-0.5 bg-surface-container-high border border-outline-variant rounded-[9px] p-[3px]">
             {RANGE_OPTIONS.map((opt) => (
               <button
