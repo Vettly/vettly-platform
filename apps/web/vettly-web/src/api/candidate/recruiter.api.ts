@@ -37,4 +37,6 @@ export const useApplicationSummary = (applicationId: string) =>
       return res.data;
     },
     enabled: !!applicationId,
+    refetchInterval: (query) =>
+      query.state.data?.aiScore == null ? 3000 : false,
   });

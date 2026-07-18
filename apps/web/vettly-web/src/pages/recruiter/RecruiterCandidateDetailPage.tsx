@@ -9,6 +9,7 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { EmptyState } from "../../components/EmptyState";
 import { formatDate, formatMonthYear } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
+import { parseSkillGap } from "../../types/candidate.types";
 
 export default function RecruiterCandidateDetailPage() {
   const { jobId = "", applicationId = "" } = useParams<{ jobId: string; applicationId: string }>();
@@ -207,25 +208,51 @@ export default function RecruiterCandidateDetailPage() {
           {/* Right column */}
           <div className="flex flex-col gap-4">
             {/* AI match score */}
-            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5 text-center">
-              <p className="text-[11.5px] font-medium font-label tracking-wide uppercase text-on-surface-variant">
-                AI match score
+            <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+              <p className="text-[11.5px] font-medium font-label tracking-wide uppercase text-on-surface-variant text-center mb-3">
+                Screening scores
               </p>
-              <p className="font-mono text-[46px] font-semibold text-[#46D39A] leading-none my-2.5">
-                {summary?.aiScore !== null && summary?.aiScore !== undefined
-                  ? Math.round(summary.aiScore)
-                  : "—"}
-              </p>
-              {summary?.skillGap ? (
-                <p className="text-xs font-body text-on-surface-variant">{summary.skillGap}</p>
-              ) : (
-                <p className="text-xs font-body text-on-surface-variant">
-                  {summary?.matchScore !== null && summary?.matchScore !== undefined
-                    ? `${Math.round(summary.matchScore)}% match for this role`
-                    : "No score available"}
-                </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-label uppercase tracking-wide text-on-surface-variant mb-1.5">
+                    Match score
+                  </p>
+                  <p className="font-mono text-[34px] font-semibold text-[#46D39A] leading-none">
+                    {summary?.matchScore != null ? Math.round(summary.matchScore) : "—"}
+                  </p>
+                  <p className="text-[10px] font-body text-on-surface-variant mt-1">AI + skills</p>
+                </div>
+                <div className="text-center bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-label uppercase tracking-wide text-on-surface-variant mb-1.5">
+                    AI score
+                  </p>
+                  <p className="font-mono text-[34px] font-semibold text-on-surface leading-none">
+                    {summary?.aiScore != null ? Math.round(summary.aiScore) : "—"}
+                  </p>
+                  <p className="text-[10px] font-body text-on-surface-variant mt-1">Semantic match</p>
+                </div>
+              </div>
+              {summary?.matchScore == null && summary?.aiScore == null && (
+                <p className="text-xs font-body text-on-surface-variant text-center mt-3">No score available</p>
               )}
             </div>
+
+            {/* Skill gap from AI screening */}
+            {parseSkillGap(summary?.skillGap).length > 0 && (
+              <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">
+                <span className="text-sm font-semibold font-headline text-on-surface">AI skill gap</span>
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {parseSkillGap(summary?.skillGap).map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container text-[11.5px] font-medium font-label"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Bias check */}
             <div className="bg-surface-container-high border border-outline-variant rounded-xl p-5">

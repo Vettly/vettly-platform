@@ -49,5 +49,22 @@ namespace Vettly.CandidateService.Controllers
             if (application is null) return NotFound();
             return Ok(application);
         }
+
+        [HttpGet("{id}/summary")]
+        public async Task<IActionResult> GetApplicationSummary(Guid id)
+        {
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application is null) return NotFound();
+            return Ok(application);
+        }
+
+        [HttpPost("preview-scores")]
+        public async Task<IActionResult> GetPreviewScores([FromBody] List<JobPreviewInfo> jobs)
+        {
+            if (jobs is null || jobs.Count == 0) return Ok(Array.Empty<object>());
+            var userId = User.GetUserID();
+            var scores = await _applicationService.GetPreviewScoresAsync(userId, jobs);
+            return Ok(scores);
+        }
     }
 }

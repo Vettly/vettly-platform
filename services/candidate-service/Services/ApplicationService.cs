@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 using Vettly.CandidateService.Data;
+using Vettly.CandidateService.DTOs;
 using Vettly.CandidateService.Models;
 using Vettly.Shared.DTOs.Candidate;
 
@@ -9,13 +12,25 @@ namespace Vettly.CandidateService.Services
     {
         private readonly CandidateDbContext _db;
         private readonly JobClient _jobClient;
+        private readonly ScreeningClient _screeningClient;
+        private readonly IMemoryCache _cache;
+        private readonly string _selfUrl;
         private readonly ILogger<ApplicationService> _logger;
 
-        public ApplicationService(CandidateDbContext db, JobClient jobClient,
+        public ApplicationService(
+            CandidateDbContext db,
+            JobClient jobClient,
+            ScreeningClient screeningClient,
+            IMemoryCache cache,
+            IConfiguration configuration,
             ILogger<ApplicationService> logger)
         {
             _db = db;
             _jobClient = jobClient;
+            _screeningClient = screeningClient;
+            _cache = cache;
+            _selfUrl = configuration["CandidateService:SelfUrl"]
+                ?? "http://vettly-candidate:8080";
             _logger = logger;
         }
 
@@ -35,6 +50,9 @@ namespace Vettly.CandidateService.Services
             if (existing)
                 throw new InvalidOperationException(
                     "Already applied to this job");
+
+            var resume = await _db.Resumes
+                .FirstOrDefaultAsync(r => r.Id == req.ResumeId && r.ProfileId == profile.Id);
 
             var application = new Application
             {
@@ -59,7 +77,42 @@ namespace Vettly.CandidateService.Services
                     application.Id, req.JobId);
             }
 
+            if (resume is not null)
+            {
+                try
+                {
+                    var callbackUrl =
+                        $"{_selfUrl}/api/internal/applications/{application.Id}/screening-result";
+                    await _screeningClient.RequestScreeningAsync(
+                        application.Id.ToString(),
+                        resume.S3Key,
+                        req.JobId.ToString(),
+                        $"{profile.FirstName} {profile.LastName}",
+                        callbackUrl);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Screening request failed for application {ApplicationId} — scores will remain null",
+                        application.Id);
+                }
+            }
+
             return MapApplication(application);
+        }
+
+        public async Task UpdateScreeningResultAsync(Guid applicationId, ScreeningResultRequest req)
+        {
+            var app = await _db.Applications.FindAsync(applicationId);
+            if (app is null) return;
+
+            app.AiScore     = (decimal)req.AiScore;
+            app.MathScore   = (decimal)req.MatchScore;
+            app.BiasFlagged = req.BiasFlagged;
+            app.SkillGap    = JsonSerializer.Serialize(req.SkillGap);
+            app.UpdatedAt   = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task<List<ApplicationResponse>> GetMyApplicationsAsync(
@@ -98,6 +151,32 @@ namespace Vettly.CandidateService.Services
                 .FirstOrDefaultAsync(application => application.Id == applicationId);
 
             return application is null ? null : MapApplication(application);
+        }
+
+        public async Task<List<JobPreviewScore>> GetPreviewScoresAsync(
+            Guid userId, List<JobPreviewInfo> jobs)
+        {
+            var profile = await _db.Profiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (profile is null) return [];
+
+            var resume = await _db.Resumes
+                .FirstOrDefaultAsync(r => r.ProfileId == profile.Id && r.IsPrimary)
+                ?? await _db.Resumes
+                    .Where(r => r.ProfileId == profile.Id)
+                    .OrderByDescending(r => r.UploadedAt)
+                    .FirstOrDefaultAsync();
+
+            if (resume is null) return [];
+
+            var jobsSignature = string.Join(",", jobs.Select(j => j.Id).Order());
+            var cacheKey = $"preview:{userId}:{resume.Id}:{jobsSignature}";
+            if (_cache.TryGetValue(cacheKey, out List<JobPreviewScore>? cached))
+                return cached!;
+
+            var scores = await _screeningClient.GetBatchPreviewAsync(resume.S3Key, jobs);
+            _cache.Set(cacheKey, scores, TimeSpan.FromMinutes(30));
+            return scores;
         }
 
         private static ApplicationResponse MapApplication(Application application) => new()

@@ -14,7 +14,9 @@ const savedTheme = localStorage.getItem("vettly-theme");
 if (savedTheme && JSON.parse(savedTheme)?.state?.isDark) {
   document.documentElement.classList.add("dark");
 }
-const isDarkOnLoad: boolean = savedTheme ? (JSON.parse(savedTheme)?.state?.isDark ?? false) : false;
+const isDarkOnLoad: boolean = savedTheme
+  ? (JSON.parse(savedTheme)?.state?.isDark ?? false)
+  : false;
 
 const { isAuthenticated, accessToken, user, setAccessToken, logout } =
   useAuthStore.getState();
