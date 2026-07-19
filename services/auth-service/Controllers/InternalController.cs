@@ -13,6 +13,6 @@ public class InternalController(AuthDbContext db) : ControllerBase
         var user = await db.Users.FindAsync(id);
         if (user is null) return NotFound();
 
-        return Ok(new { user.FirstName, user.LastName });
+        return Ok(new { user.FirstName, user.LastName, user.Email });
     }
 }

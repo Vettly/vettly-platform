@@ -148,6 +148,32 @@ services:
       redis:
         condition: service_healthy
 
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: vettly-notification
+    environment:
+      - REDIS_ADDR=redis:6379
+      - SMTP_HOST=${MAILTRAP_HOST}
+      - SMTP_PORT=${MAILTRAP_PORT}
+      - SMTP_USERNAME=${MAILTRAP_USERNAME}
+      - SMTP_PASSWORD=${MAILTRAP_PASSWORD}
+      - SMTP_FROM=${MAILTRAP_FROM}
+      - JOB_SERVICE_URL=http://vettly-job:8080
+      - CANDIDATE_SERVICE_URL=http://vettly-candidate:8080
+      - AUTH_SERVICE_URL=http://vettly-auth:8080
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+    depends_on:
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      candidate-service:
+        condition: service_started
+      job-service:
+        condition: service_started
+
   screening-service:
     build:
       context: ./services
