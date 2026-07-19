@@ -8,6 +8,10 @@
 appsettings.Development.json
 # Go
 **/vendor/
+services/notification-service/notification-service
+services/notification-service/notification-service.exe
+services/api-gateway/api-gateway
+services/api-gateway/api-gateway.exe
 
 # Python
 **/__pycache__/

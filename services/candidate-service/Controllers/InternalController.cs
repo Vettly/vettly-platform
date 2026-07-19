@@ -31,6 +31,7 @@ public class InternalController(
                 CandidateUserId = a.Candidate.UserId,
                 a.Candidate.FirstName,
                 a.Candidate.LastName,
+                a.Candidate.Email,
             })
             .FirstOrDefaultAsync();
 
@@ -43,6 +44,7 @@ public class InternalController(
             result.CandidateUserId,
             CandidateFirstName = result.FirstName,
             CandidateLastName = result.LastName,
+            CandidateEmail = result.Email,
         });
     }
 }
