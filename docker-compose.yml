@@ -225,7 +225,7 @@ services:
       dockerfile: interview-service/Dockerfile
     container_name: vettly-interview
     ports:
-      - "5054:8080"
+      - "5057:8080"
     environment:
       - ConnectionStrings__InterviewDb=Host=postgres;Database=vettly_interview;Username=postgres;Password=${POSTGRES_PASSWORD}
       - Jwt__SecretKey=${JWT_SECRET}
@@ -248,7 +248,7 @@ services:
       dockerfile: matching-service/Dockerfile
     container_name: vettly-matching
     ports:
-      - "5055:8080"
+      - "5058:8080"
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ISSUER=vettly-auth-service

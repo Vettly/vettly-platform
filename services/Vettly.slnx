@@ -11,6 +11,9 @@
   <Folder Name="/esign-service/">
     <Project Path="esign-service/Vettly.ESignService.csproj" />
   </Folder>
+  <Folder Name="/interview-service/">
+    <Project Path="interview-service/Vettly.InterviewService.csproj" />
+  </Folder>
   <Folder Name="/job-service/">
     <Project Path="job-service/Vettly.JobService.csproj" />
   </Folder>
