@@ -1,75 +1,54 @@
-# React + TypeScript + Vite
+# vettly-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React web frontend for Vettly — the candidate and recruiter portal. Talks to the backend microservices described in the [root README](../../../README.md).
 
-Currently, two official plugins are available:
+## Tech stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript + Vite
+- Tailwind CSS v4
+- React Router v7 (route paths centralized in `src/router/routes.ts`)
+- TanStack Query v5 (persisted server-state cache)
+- Zustand (client/UI state)
+- React Hook Form + Zod (forms & validation)
+- Axios (HTTP clients)
+- `@microsoft/signalr` (real-time messaging)
 
-## React Compiler
+## Folder structure
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── api/          # Axios clients, one module per backend service (auth, candidate, job, esign, interview, messaging, organization)
+├── pages/        # Route-level pages, organized by role: auth/, candidate/, recruiter/, messages/
+├── router/        # Route tree (index.tsx) and centralized path constants (routes.ts)
+├── stores/        # Zustand stores: auth, theme, nav badges
+├── hooks/         # Shared hooks (messaging hub, candidate/nav data)
+├── types/         # TypeScript types per domain
+├── components/    # Shared UI components
+└── utils/         # Formatting and misc helpers
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in this directory (there is currently no `.env.example` to copy):
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+VITE_AUTH_API_URL=
+VITE_CANDIDATE_API_URL=
+VITE_JOB_API_URL=
+VITE_ORG_API_URL=
+VITE_MESSAGING_API_URL=
+VITE_ESIGN_API_URL=
+VITE_INTERVIEW_API_URL=
+```
+
+Point each at the corresponding backend service (see ports in the root README).
+
+## Development
+
+```
+npm install
+npm run dev       # start dev server
+npm run build     # type-check and build for production
+npm run lint      # eslint
+npm run preview   # preview the production build
 ```
