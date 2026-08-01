@@ -6,8 +6,12 @@ import { computeCompleteness } from "./utils";
 import { formatRelative } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
 import type { Application } from "../../types/candidate.types";
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONES } from "../../utils/tones";
+import {
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_TONES,
+} from "../../utils/tones";
 import { PillBadge } from "../../components/PillBadge";
+import { NotificationBell } from "../../components/NotificationBell";
 import { UpcomingInterviews } from "./components/UpcomingInterviews";
 
 const SPARK_BARS: { key: string; height: number; className: string }[] = [
@@ -57,7 +61,10 @@ function ApplicationRow({ app }: Readonly<{ app: Application }>) {
         {app.matchScore == null ? "—" : `${Math.round(app.matchScore)}%`}
       </span>
       <div>
-        <PillBadge tone={tone} label={APPLICATION_STATUS_LABELS[app.status] ?? app.status} />
+        <PillBadge
+          tone={tone}
+          label={APPLICATION_STATUS_LABELS[app.status] ?? app.status}
+        />
       </div>
       <span className="font-mono text-xs text-on-surface-variant text-right">
         {formatRelative(app.updatedAt)}
@@ -79,20 +86,28 @@ export default function CandidateHomePage() {
   const { pct, checks } = computeCompleteness(profile);
 
   const recentApplications = [...applications]
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
     .slice(0, 5);
 
   const matchScores = applications
     .map((a) => a.matchScore)
     .filter((m): m is number => m != null);
   const avgMatch = matchScores.length
-    ? Math.round(matchScores.reduce((sum, m) => sum + m, 0) / matchScores.length)
+    ? Math.round(
+        matchScores.reduce((sum, m) => sum + m, 0) / matchScores.length,
+      )
     : null;
 
-  const interviewCount = applications.filter((a) => a.status === "interview").length;
+  const interviewCount = applications.filter(
+    (a) => a.status === "interview",
+  ).length;
 
   const newThisWeek = applications.filter(
-    (a) => Date.now() - new Date(a.appliedAt).getTime() < 7 * 24 * 60 * 60 * 1000
+    (a) =>
+      Date.now() - new Date(a.appliedAt).getTime() < 7 * 24 * 60 * 60 * 1000,
   ).length;
 
   const stats = [
@@ -134,24 +149,30 @@ export default function CandidateHomePage() {
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-[18px]">
       {/* Header */}
-      <div>
-        <p className="font-mono text-[11px] tracking-[0.12em] uppercase text-secondary-fixed-dim mb-1.5">
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-        <h1 className="text-[23px] font-semibold font-headline text-on-surface tracking-tight">
-          Welcome back, {user?.firstName}
-        </h1>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="font-mono text-[11px] tracking-[0.12em] uppercase text-secondary-fixed-dim mb-1.5">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <h1 className="text-[23px] font-semibold font-headline text-on-surface tracking-tight">
+            Welcome back, {user?.firstName}
+          </h1>
+        </div>
+        <NotificationBell />
       </div>
 
       {/* Stats row */}
       {isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-surface-container-high animate-pulse rounded-xl h-24" />
+            <div
+              key={i}
+              className="bg-surface-container-high animate-pulse rounded-xl h-24"
+            />
           ))}
         </div>
       ) : (
@@ -160,11 +181,16 @@ export default function CandidateHomePage() {
             <div
               key={s.label}
               className={`flex-1 px-5 py-[18px] ${
-                i > 0 ? "border-t sm:border-t-0 sm:border-l border-outline-variant" : ""
+                i > 0
+                  ? "border-t sm:border-t-0 sm:border-l border-outline-variant"
+                  : ""
               }`}
             >
               <div className="flex items-center gap-2 text-on-surface-variant">
-                <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "17px" }}
+                >
                   {s.icon}
                 </span>
                 <span className="text-[11.5px] font-medium font-label tracking-wide uppercase">
@@ -178,7 +204,10 @@ export default function CandidateHomePage() {
                   </div>
                   {s.delta && (
                     <div className="flex items-center gap-1 font-mono text-[11.5px] text-[#46D39A] mt-2">
-                      <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "14px" }}
+                      >
                         trending_up
                       </span>
                       {s.delta}
@@ -210,15 +239,23 @@ export default function CandidateHomePage() {
           {isLoading ? (
             <div className="p-4 space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-surface-container-highest animate-pulse rounded-lg h-14" />
+                <div
+                  key={i}
+                  className="bg-surface-container-highest animate-pulse rounded-lg h-14"
+                />
               ))}
             </div>
           ) : recentApplications.length === 0 ? (
             <div className="text-center py-10 space-y-2">
-              <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: "40px" }}>
+              <span
+                className="material-symbols-outlined text-on-surface-variant"
+                style={{ fontSize: "40px" }}
+              >
                 work_off
               </span>
-              <p className="text-sm font-body text-on-surface-variant">No applications yet.</p>
+              <p className="text-sm font-body text-on-surface-variant">
+                No applications yet.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -275,14 +312,18 @@ export default function CandidateHomePage() {
                     </span>
                     <span
                       className={`text-[12.5px] font-body flex-1 ${
-                        checks[key] ? "text-on-surface-variant" : "text-on-surface"
+                        checks[key]
+                          ? "text-on-surface-variant"
+                          : "text-on-surface"
                       }`}
                     >
                       {label}
                     </span>
                     <span
                       className={`text-[11px] font-bold font-label ${
-                        checks[key] ? "text-[#46D39A]" : "text-secondary-fixed-dim"
+                        checks[key]
+                          ? "text-[#46D39A]"
+                          : "text-secondary-fixed-dim"
                       }`}
                     >
                       {checks[key] ? "Done" : "Add"}
@@ -301,7 +342,10 @@ export default function CandidateHomePage() {
             to={ROUTES.CANDIDATE_PROFILE}
             className="flex items-center justify-center gap-2 h-[46px] rounded-[10px] bg-secondary-fixed-dim text-on-secondary-fixed font-semibold font-body text-[13.5px] hover:opacity-90 transition-opacity"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "18px" }}
+            >
               {pct >= 100 ? "edit" : "upload_file"}
             </span>
             {pct >= 100 ? "Edit profile" : "Complete profile"}

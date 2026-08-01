@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useJob, useJobs } from "../../api/job/job.api";
-import { useApplications, useApplyToJob, useResumes } from "../../api/candidate/candidate.api";
+import { useApplications, useApplyToJob, usePreviewScores, useResumes } from "../../api/candidate/candidate.api";
 import { useNavBadgeStore } from "../../stores/navBadgeStore";
 import { formatRelative, formatSalary } from "../../utils/format";
 import { ROUTES } from "../../router/routes";
@@ -23,6 +23,7 @@ function matchesFilterTag(job: JobSummary, tag: FilterTag): boolean {
 function companyInitial(job: Pick<JobSummary, "title" | "companyName">): string {
   return (job.companyName ?? job.title).charAt(0).toUpperCase();
 }
+
 
 function chipClasses(active: boolean): string {
   return active
@@ -77,12 +78,16 @@ function JobCard({
   job,
   isApplied,
   isApplying,
+  matchScore,
+  scoresLoading,
   onApply,
   onOpenDetails,
 }: Readonly<{
   job: JobSummary;
   isApplied: boolean;
   isApplying: boolean;
+  matchScore: number | null;
+  scoresLoading: boolean;
   onApply: () => void;
   onOpenDetails: () => void;
 }>) {
@@ -106,6 +111,21 @@ function JobCard({
             {job.location ? ` · ${job.location}` : ""}
           </div>
         </button>
+        {scoresLoading ? (
+          <div className="text-right shrink-0 flex flex-col items-end gap-1">
+            <div className="w-8 h-4 bg-outline-variant/60 rounded animate-pulse" />
+            <div className="w-10 h-2.5 bg-outline-variant/40 rounded animate-pulse" />
+          </div>
+        ) : matchScore != null && (
+          <div className="text-right shrink-0">
+            <p className="text-[15px] font-bold font-mono leading-none" style={{ color: "#46D39A" }}>
+              {matchScore}%
+            </p>
+            <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wide mt-0.5">
+              Match
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3.5 text-xs font-body text-on-surface">
@@ -156,12 +176,14 @@ function JobDetailModal({
   jobId,
   isApplied,
   isApplying,
+  matchScore,
   onApply,
   onClose,
 }: Readonly<{
   jobId: string;
   isApplied: boolean;
   isApplying: boolean;
+  matchScore: number | null;
   onApply: () => void;
   onClose: () => void;
 }>) {
@@ -203,6 +225,14 @@ function JobDetailModal({
             </div>
             <div className="p-6 overflow-y-auto flex flex-col gap-4.5">
               <div className="flex gap-2.5">
+                {matchScore != null && (
+                  <div className="flex-1 bg-surface-container-highest border border-outline-variant rounded-[10px] p-3">
+                    <div className="text-[10.5px] font-label text-on-surface-variant uppercase tracking-wide">Match</div>
+                    <div className="text-sm font-semibold font-mono mt-1.5" style={{ color: "#46D39A" }}>
+                      {matchScore}%
+                    </div>
+                  </div>
+                )}
                 {salary && <StatBox label="Salary" value={salary} />}
                 <StatBox label="Posted" value={`${formatRelative(job.createdAt)} ago`} />
                 {job.workArrangement && <StatBox label="Arrangement" value={job.workArrangement} />}
@@ -266,11 +296,22 @@ export default function JobListingsPage() {
   const { data: resumes } = useResumes();
   const applyToJob = useApplyToJob();
 
+  const { data: previewScoreMap, isLoading: scoresLoading } = usePreviewScores(jobs ?? []);
+
   useEffect(() => {
     useNavBadgeStore.getState().markViewed("candidateFindJobs");
   }, []);
 
   const appliedJobIds = new Set(applications?.map((a) => a.jobId) ?? []);
+  const mlScoreByJobId = new Map(
+    (applications ?? [])
+      .filter((a) => a.matchScore != null)
+      .map((a) => [a.jobId, Math.round(a.matchScore!)])
+  );
+  const getMatchScore = (job: JobSummary): number | null => {
+    if (mlScoreByJobId.has(job.id)) return mlScoreByJobId.get(job.id)!;
+    return previewScoreMap?.get(job.id) ?? null;
+  };
   const primaryResume = resumes?.find((r) => r.isPrimary) ?? resumes?.[0];
   const jobList = (jobs ?? []).filter((job) => matchesFilterTag(job, filterTag));
 
@@ -328,6 +369,8 @@ export default function JobListingsPage() {
             job={job}
             isApplied={appliedJobIds.has(job.id)}
             isApplying={applyingId === job.id}
+            matchScore={getMatchScore(job)}
+            scoresLoading={scoresLoading && !mlScoreByJobId.has(job.id)}
             onApply={() => handleApply(job.id)}
             onOpenDetails={() => setDetailsJobId(job.id)}
           />
@@ -375,6 +418,7 @@ export default function JobListingsPage() {
           jobId={detailsJobId}
           isApplied={appliedJobIds.has(detailsJobId)}
           isApplying={applyingId === detailsJobId}
+          matchScore={getMatchScore((jobs ?? []).find((j) => j.id === detailsJobId) ?? { skills: [] } as JobSummary)}
           onApply={() => handleApply(detailsJobId)}
           onClose={() => setDetailsJobId(null)}
         />

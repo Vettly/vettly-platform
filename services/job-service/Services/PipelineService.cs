@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Vettly.JobService.Data;
 using Vettly.JobService.Models;
+using Vettly.Shared.DTOs.Events;
 using Vettly.Shared.DTOs.Job;
 
 namespace Vettly.JobService.Services;
@@ -22,10 +23,12 @@ public interface IPipelineService
 public class PipelineService : IPipelineService
 {
     private readonly JobDbContext _db;
+    private readonly RedisEventPublisher _eventPublisher;
 
-    public PipelineService(JobDbContext db)
+    public PipelineService(JobDbContext db, RedisEventPublisher eventPublisher)
     {
         _db = db;
+        _eventPublisher = eventPublisher;
     }
 
     public async Task<PipelineStageResponse> MoveToStageAsync(
@@ -49,6 +52,17 @@ public class PipelineService : IPipelineService
 
         _db.PipelineStages.Add(stage);
         await _db.SaveChangesAsync();
+
+        await _eventPublisher.PublishAsync(DomainEventTypes.StageChanged, new StageChangedEvent
+        {
+            ApplicationId = req.ApplicationId,
+            JobId = jobId,
+            JobTitle = job.Title,
+            CandidateProfileId = req.CandidateId,
+            Stage = req.Stage,
+            RecruiterUserId = recruiterId,
+        });
+
         return MapStage(stage);
     }
 

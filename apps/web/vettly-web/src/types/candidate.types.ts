@@ -71,21 +71,17 @@ export interface Application {
   aiScore: number | null;
   biasFlagged: boolean;
   matchScore: number | null;
+  skillGap: string | null;
   appliedAt: string;
   updatedAt: string;
 }
 
-export interface ApplicationSummary {
-  id: string;
-  jobId: string;
-  resumeId: string;
-  status: ApplicationStatus;
-  aiScore: number | null;
-  biasFlagged: boolean;
-  matchScore: number | null;
-  skillGap: string | null;
-  appliedAt: string;
-  updatedAt: string;
+export type ApplicationSummary = Application;
+
+export function parseSkillGap(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; }
+  catch { return []; }
 }
 
 export interface CreateProfileRequest {

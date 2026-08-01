@@ -1,0 +1,58 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#08090B;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#08090B;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:#0C0D10;border:1px solid #23252B;border-radius:16px;overflow:hidden;">
+
+          <!-- accent bar -->
+          <tr>
+            <td style="height:4px;background:linear-gradient(90deg,#F4A340,#FFCB85);font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+
+          <!-- header / logo -->
+          <tr>
+            <td style="padding:28px 32px 24px;border-bottom:1px solid #1C1E23;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding-right:10px;">
+                    <img src="cid:vettly-logo" width="32" height="32" alt="Vettly" style="display:block;border-radius:8px;">
+                  </td>
+                  <td>
+                    <span style="font-size:19px;font-weight:700;color:#EAECEF;letter-spacing:-0.02em;">Vettly</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- content -->
+          <tr>
+            <td style="padding:32px;color:#C9CDD4;font-size:14.5px;line-height:1.65;">
+              {{template "content" .}}
+            </td>
+          </tr>
+
+          <!-- footer -->
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #1C1E23;background:#0E0F13;">
+              <p style="margin:0;color:#6E7681;font-size:11.5px;line-height:1.5;">
+                You're receiving this because you have an account on Vettly.<br>
+                This is an automated message — please don't reply directly to this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+{{end}}

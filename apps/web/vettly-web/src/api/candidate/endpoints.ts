@@ -16,4 +16,5 @@ export const CANDIDATE_ENDPOINTS = {
     `/api/candidates/${candidateId}/profile`,
   APPLICATION_SUMMARY: (applicationId: string) =>
     `/api/candidates/applications/${applicationId}/summary`,
+  PREVIEW_SCORES: "/api/candidates/applications/preview-scores",
 } as const;
