@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useJob } from "../../api/job/job.api";
 import { useCandidateStage } from "../../api/job/pipeline.api";
@@ -5,20 +6,27 @@ import {
   useApplicationSummary,
   useCandidateProfile,
 } from "../../api/candidate/recruiter.api";
+import { useMyDocuments } from "../../api/esign/esign.api";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { EmptyState } from "../../components/EmptyState";
+import { PillBadge } from "../../components/PillBadge";
 import { formatDate, formatMonthYear } from "../../utils/format";
+import { DOCUMENT_STATUS_LABELS, DOCUMENT_STATUS_TONES } from "../../utils/tones";
 import { ROUTES } from "../../router/routes";
 import { parseSkillGap } from "../../types/candidate.types";
 import { buildMessagesLink } from "../../utils/messagingLinks";
+import { SendOfferModal } from "./components/SendOfferModal";
 
 export default function RecruiterCandidateDetailPage() {
   const { jobId = "", applicationId = "" } = useParams<{ jobId: string; applicationId: string }>();
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
 
   const { data: job, isLoading: jobLoading } = useJob(jobId);
   const { data: stage, isLoading: stageLoading } = useCandidateStage(jobId, applicationId);
   const { data: summary, isLoading: summaryLoading } = useApplicationSummary(applicationId);
   const { data: profile, isLoading: profileLoading } = useCandidateProfile(stage?.candidateId ?? "");
+  const { data: documents } = useMyDocuments();
+  const existingOffer = documents?.find((d) => d.applicationId === applicationId);
 
   const isLoading = jobLoading || stageLoading || summaryLoading || profileLoading;
 
@@ -56,14 +64,34 @@ export default function RecruiterCandidateDetailPage() {
             {profile?.location ? ` · ${profile.location}` : ""}
           </p>
         </div>
-        <Link
-          to={buildMessagesLink("recruiter", applicationId)}
-          className="flex items-center gap-2 h-9 px-3.5 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors shrink-0 ml-auto"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>forum</span>
-          <span>Message candidate</span>
-        </Link>
+        <div className="flex items-center gap-2 ml-auto shrink-0">
+          {existingOffer ? (
+            <PillBadge
+              tone={DOCUMENT_STATUS_TONES[existingOffer.status]}
+              label={DOCUMENT_STATUS_LABELS[existingOffer.status]}
+            />
+          ) : (
+            <button
+              onClick={() => setOfferModalOpen(true)}
+              className="flex items-center gap-2 h-9 px-3.5 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>draw</span>
+              <span>Send offer</span>
+            </button>
+          )}
+          <Link
+            to={buildMessagesLink("recruiter", applicationId)}
+            className="flex items-center gap-2 h-9 px-3.5 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>forum</span>
+            <span>Message candidate</span>
+          </Link>
+        </div>
       </div>
+
+      {offerModalOpen && (
+        <SendOfferModal applicationId={applicationId} onClose={() => setOfferModalOpen(false)} />
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-10">

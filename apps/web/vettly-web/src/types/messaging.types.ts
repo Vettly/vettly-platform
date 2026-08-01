@@ -22,7 +22,8 @@ export type NotificationType =
   | "application_received"
   | "stage_changed"
   | "offer_ready"
-  | "message_reply";
+  | "message_reply"
+  | "document_signed";
 
 export interface NotificationItem {
   id: string;

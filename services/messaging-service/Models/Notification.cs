@@ -6,6 +6,7 @@ public static class NotificationType
     public const string StageChanged = "stage_changed";
     public const string OfferReady = "offer_ready";
     public const string MessageReply = "message_reply";
+    public const string DocumentSigned = "document_signed";
 }
 
 public class Notification

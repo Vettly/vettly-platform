@@ -64,3 +64,13 @@ export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   closed: "Closed",
   archived: "Archived",
 };
+
+export const DOCUMENT_STATUS_TONES: Record<"pending" | "signed", Tone> = {
+  pending: { color: "#F4A340", bg: "rgba(244,163,64,.12)" },
+  signed: { color: "#46D39A", bg: "rgba(70,211,154,.12)" },
+};
+
+export const DOCUMENT_STATUS_LABELS: Record<"pending" | "signed", string> = {
+  pending: "Awaiting signature",
+  signed: "Signed",
+};

@@ -6,11 +6,19 @@ import {
   useCandidateProfile,
 } from "../../../api/candidate/recruiter.api";
 import { useUpdateNotes } from "../../../api/job/pipeline.api";
+import { useMyDocuments } from "../../../api/esign/esign.api";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { PillBadge } from "../../../components/PillBadge";
-import { PIPELINE_LABELS, PIPELINE_ORDER, PIPELINE_TONES } from "../../../utils/tones";
+import {
+  DOCUMENT_STATUS_LABELS,
+  DOCUMENT_STATUS_TONES,
+  PIPELINE_LABELS,
+  PIPELINE_ORDER,
+  PIPELINE_TONES,
+} from "../../../utils/tones";
 import { formatRelative } from "../../../utils/format";
 import { ROUTES } from "../../../router/routes";
+import { SendOfferModal } from "./SendOfferModal";
 import type { JobSummary, PipelineStage, PipelineStageName } from "../../../types/job.types";
 
 export function CandidateDrawer({
@@ -30,9 +38,12 @@ export function CandidateDrawer({
 }>) {
   const { data: profile, isLoading: profileLoading } = useCandidateProfile(entry.candidateId);
   const { data: summary, isLoading: summaryLoading } = useApplicationSummary(entry.applicationId);
+  const { data: documents } = useMyDocuments();
   const updateNotes = useUpdateNotes(jobId);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(entry.notes ?? "");
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const existingOffer = documents?.find((d) => d.applicationId === entry.applicationId);
 
   const isLoading = profileLoading || summaryLoading;
 
@@ -217,14 +228,23 @@ export function CandidateDrawer({
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>open_in_full</span>
             View full profile
           </Link>
-          {profile?.email && (
-            <a
-              href={`mailto:${profile.email}?subject=${encodeURIComponent(`Offer — ${job?.title ?? "Role"}`)}`}
+          {existingOffer ? (
+            <div className="flex items-center justify-center gap-2 h-[42px] rounded-[10px] bg-surface-container-highest border border-outline-variant">
+              <span className="text-[13px] font-body text-on-surface-variant">Offer:</span>
+              <PillBadge
+                tone={DOCUMENT_STATUS_TONES[existingOffer.status]}
+                label={DOCUMENT_STATUS_LABELS[existingOffer.status]}
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setOfferModalOpen(true)}
               className="flex items-center justify-center gap-2 h-[42px] rounded-[10px] bg-secondary-fixed-dim/12 border border-secondary-fixed-dim/40 text-secondary-fixed-dim font-semibold font-body text-[13.5px] hover:bg-secondary-fixed-dim/18 transition-colors"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>mail</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>draw</span>
               Send offer letter
-            </a>
+            </button>
           )}
           <div className="flex gap-2.5">
             <button
@@ -248,6 +268,13 @@ export function CandidateDrawer({
           </div>
         </div>
       </div>
+
+      {offerModalOpen && (
+        <SendOfferModal
+          applicationId={entry.applicationId}
+          onClose={() => setOfferModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

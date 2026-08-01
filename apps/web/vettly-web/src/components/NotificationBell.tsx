@@ -15,6 +15,7 @@ const TYPE_ICON: Record<NotificationItem["type"], { icon: string; color: string 
   stage_changed: { icon: "work", color: "#F4A340" },
   offer_ready: { icon: "draw", color: "#5BC8D4" },
   message_reply: { icon: "forum", color: "#46D39A" },
+  document_signed: { icon: "verified", color: "#5BC8D4" },
 };
 
 function formatRelativeTime(iso: string): string {
@@ -66,12 +67,16 @@ export function NotificationBell() {
       navigate(ROUTES.CANDIDATE_APPLICATION_DETAIL(n.applicationId));
       return;
     }
-    if (n.type === "application_received" && n.jobId && n.applicationId) {
+    if (
+      (n.type === "application_received" || n.type === "document_signed") &&
+      n.jobId &&
+      n.applicationId
+    ) {
       navigate(ROUTES.RECRUITER_CANDIDATE_DETAIL(n.jobId, n.applicationId));
       return;
     }
     if (n.type === "offer_ready") {
-      navigate(messagesRoute);
+      navigate(ROUTES.CANDIDATE_DOCUMENTS);
     }
   };
 

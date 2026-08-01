@@ -39,6 +39,8 @@ func HandleMessage(d *Deps, payload string) {
 		handleStageChanged(ctx, d, env.Data)
 	case EventOfferReady:
 		handleOfferReady(ctx, d, env.Data)
+	case EventDocumentSigned:
+		handleDocumentSigned(ctx, d, env.Data)
 	default:
 		log.Printf("ignoring unknown event type %q", env.Type)
 	}
@@ -136,4 +138,32 @@ func handleOfferReady(ctx context.Context, d *Deps, raw json.RawMessage) {
 		return
 	}
 	log.Printf("offer_ready: emailed candidate %s for application %s", participants.CandidateEmail, data.ApplicationId)
+}
+
+func handleDocumentSigned(ctx context.Context, d *Deps, raw json.RawMessage) {
+	var data DocumentSigned
+	if err := json.Unmarshal(raw, &data); err != nil {
+		log.Printf("document_signed: bad payload: %v", err)
+		return
+	}
+
+	recruiter, err := d.Resolver.GetUser(ctx, data.RecruiterUserId)
+	if err != nil {
+		log.Printf("document_signed: resolving recruiter %s: %v", data.RecruiterUserId, err)
+		return
+	}
+	if recruiter.Email == "" {
+		log.Printf("document_signed: recruiter %s has no email, skipping", data.RecruiterUserId)
+		return
+	}
+
+	subject := data.CandidateName + " accepted the offer"
+	toName := recruiter.FirstName + " " + recruiter.LastName
+	body := struct{ CandidateName, JobTitle, ActionURL string }{data.CandidateName, data.JobTitle, d.FrontendURL}
+
+	if err := d.Mailer.Send(ctx, recruiter.Email, toName, subject, EventDocumentSigned, body); err != nil {
+		log.Printf("document_signed: sending email to %s: %v", recruiter.Email, err)
+		return
+	}
+	log.Printf("document_signed: emailed recruiter %s for application %s", recruiter.Email, data.ApplicationId)
 }

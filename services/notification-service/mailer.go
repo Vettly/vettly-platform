@@ -60,6 +60,7 @@ var eventTemplateNames = []string{
 	EventApplicationReceived,
 	EventStageChanged,
 	EventOfferReady,
+	EventDocumentSigned,
 }
 
 // EmailContext is embedded into every template's data so base.html has

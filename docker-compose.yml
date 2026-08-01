@@ -148,6 +148,34 @@ services:
       redis:
         condition: service_healthy
 
+  esign-service:
+    build:
+      context: ./services
+      dockerfile: esign-service/Dockerfile
+    container_name: vettly-esign
+    ports:
+      - "5056:8080"
+    environment:
+      - ConnectionStrings__EsignDb=Host=postgres;Database=vettly_esign;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET}
+      - Jwt__Issuer=vettly-auth-service
+      - Jwt__Audience=vettly-platform
+      - Redis__ConnectionString=redis:6379
+      - R2__AccountId=${R2_ACCOUNT_ID}
+      - R2__AccessKey=${R2_ACCESS_KEY}
+      - R2__SecretKey=${R2_SECRET_KEY}
+      - R2__BucketName=${R2_BUCKET_NAME}
+      - R2__PublicUrl=${R2_PUBLIC_URL}
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN}
+      - JobService__BaseUrl=${JOB_SERVICE_BASE_URL}
+      - CandidateService__BaseUrl=http://vettly-candidate:8080
+      - AuthService__BaseUrl=http://vettly-auth:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   notification-service:
     build:
       context: ./services/notification-service

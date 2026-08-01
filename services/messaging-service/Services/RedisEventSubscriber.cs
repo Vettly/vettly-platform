@@ -102,6 +102,20 @@ public class RedisEventSubscriber(
                     data.ApplicationId);
                 break;
             }
+            case DomainEventTypes.DocumentSigned:
+            {
+                var data = doc.RootElement.GetProperty("data").Deserialize<DocumentSignedEvent>(JsonOptions);
+                if (data is null) return;
+
+                await notificationService.CreateAsync(
+                    data.RecruiterUserId,
+                    NotificationType.DocumentSigned,
+                    $"{data.CandidateName} accepted the offer",
+                    data.JobTitle,
+                    data.JobId,
+                    data.ApplicationId);
+                break;
+            }
         }
     }
 }

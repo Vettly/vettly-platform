@@ -9,6 +9,7 @@ const (
 	EventApplicationReceived = "application_received"
 	EventStageChanged        = "stage_changed"
 	EventOfferReady          = "offer_ready"
+	EventDocumentSigned      = "document_signed"
 )
 
 // Envelope mirrors Vettly.Shared.DTOs.Events.DomainEventEnvelope<T> — the
@@ -41,4 +42,12 @@ type OfferReady struct {
 	JobId           string `json:"jobId"`
 	JobTitle        string `json:"jobTitle"`
 	CandidateUserId string `json:"candidateUserId"`
+}
+
+type DocumentSigned struct {
+	ApplicationId   string `json:"applicationId"`
+	JobId           string `json:"jobId"`
+	JobTitle        string `json:"jobTitle"`
+	CandidateName   string `json:"candidateName"`
+	RecruiterUserId string `json:"recruiterUserId"`
 }

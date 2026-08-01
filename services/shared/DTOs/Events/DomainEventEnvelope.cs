@@ -12,4 +12,5 @@ public static class DomainEventTypes
     public const string ApplicationReceived = "application_received";
     public const string StageChanged = "stage_changed";
     public const string OfferReady = "offer_ready";
+    public const string DocumentSigned = "document_signed";
 }

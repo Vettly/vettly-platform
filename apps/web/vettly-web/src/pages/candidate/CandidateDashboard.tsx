@@ -7,6 +7,7 @@ import { useJobs } from "../../api/job/job.api";
 import { useNavBadgeCount } from "../../hooks/useNavBadgeCount";
 import { useMessagingHub } from "../../hooks/useMessagingHub";
 import { useUnreadSummary } from "../../api/messaging/messaging.api";
+import { useMyDocuments } from "../../api/esign/esign.api";
 import { ROUTES } from "../../router/routes";
 import { VettlyLogo } from "../../components/VettlyLogo";
 import { NotificationBell } from "../../components/NotificationBell";
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Find jobs", icon: "search", to: ROUTES.CANDIDATE_JOBS },
   { label: "My applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
   { label: "Messages", icon: "chat_bubble", to: ROUTES.CANDIDATE_MESSAGES },
+  { label: "Documents", icon: "folder_open", to: ROUTES.CANDIDATE_DOCUMENTS },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];
 
@@ -36,6 +38,8 @@ export default function CandidateDashboard() {
   useMessagingHub();
   const { data: unreadSummary } = useUnreadSummary();
   const unreadMessages = unreadSummary?.messages ?? 0;
+  const { data: documents } = useMyDocuments();
+  const pendingDocsCount = (documents ?? []).filter((d) => d.status === "pending").length;
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -123,6 +127,11 @@ export default function CandidateDashboard() {
                 {!collapsed && item.to === ROUTES.CANDIDATE_MESSAGES && unreadMessages > 0 && (
                   <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
                     {unreadMessages}
+                  </span>
+                )}
+                {!collapsed && item.to === ROUTES.CANDIDATE_DOCUMENTS && pendingDocsCount > 0 && (
+                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                    {pendingDocsCount}
                   </span>
                 )}
               </Link>

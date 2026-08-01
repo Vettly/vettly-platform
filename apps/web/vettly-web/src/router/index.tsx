@@ -23,6 +23,7 @@ import RecruiterCandidateDetailPage from "../pages/recruiter/RecruiterCandidateD
 import RecruiterAnalyticsPage from "../pages/recruiter/RecruiterAnalyticsPage";
 import RecruiterBiasReportPage from "../pages/recruiter/RecruiterBiasReportPage";
 import MessagesPage from "../pages/messages/MessagesPage";
+import DocumentsPage from "../pages/candidate/DocumentsPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -75,6 +76,7 @@ export const router = createBrowserRouter([
       { path: "applications/:applicationId", element: <CandidateApplicationDetailPage /> },
       { path: "profile", element: <CandidateProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
+      { path: "documents", element: <DocumentsPage /> },
     ],
   },
   {
