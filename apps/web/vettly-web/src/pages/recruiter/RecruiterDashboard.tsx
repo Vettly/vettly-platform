@@ -16,7 +16,12 @@ const NAV_ITEMS = [
   { label: "Jobs", icon: "work", to: ROUTES.RECRUITER_JOBS },
   { label: "Candidates", icon: "group", to: ROUTES.RECRUITER_CANDIDATES },
   { label: "Messages", icon: "chat_bubble", to: ROUTES.RECRUITER_MESSAGES },
-  { label: "Organization", icon: "apartment", to: ROUTES.RECRUITER_ORGANIZATION },
+  { label: "Interviews", icon: "video_call", to: ROUTES.RECRUITER_INTERVIEWS },
+  {
+    label: "Organization",
+    icon: "apartment",
+    to: ROUTES.RECRUITER_ORGANIZATION,
+  },
   { label: "Analytics", icon: "insights", to: ROUTES.RECRUITER_ANALYTICS },
   { label: "Bias report", icon: "balance", to: ROUTES.RECRUITER_BIAS_REPORT },
 ];
@@ -79,7 +84,10 @@ export default function RecruiterDashboard() {
             onClick={() => setCollapsed((c) => !c)}
             className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "20px" }}
+            >
               {collapsed ? "chevron_right" : "chevron_left"}
             </span>
           </button>
@@ -105,22 +113,29 @@ export default function RecruiterDashboard() {
                 `}
                 title={collapsed ? item.label : undefined}
               >
-                <span className="material-symbols-outlined shrink-0" style={{ fontSize: "22px" }}>
+                <span
+                  className="material-symbols-outlined shrink-0"
+                  style={{ fontSize: "22px" }}
+                >
                   {item.icon}
                 </span>
                 {!collapsed && (
                   <span className="font-body text-sm">{item.label}</span>
                 )}
-                {!collapsed && item.to === ROUTES.RECRUITER_JOBS && newApplicantsCount > 0 && (
-                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
-                    {newApplicantsCount}
-                  </span>
-                )}
-                {!collapsed && item.to === ROUTES.RECRUITER_MESSAGES && unreadMessages > 0 && (
-                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
-                    {unreadMessages}
-                  </span>
-                )}
+                {!collapsed &&
+                  item.to === ROUTES.RECRUITER_JOBS &&
+                  newApplicantsCount > 0 && (
+                    <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                      {newApplicantsCount}
+                    </span>
+                  )}
+                {!collapsed &&
+                  item.to === ROUTES.RECRUITER_MESSAGES &&
+                  unreadMessages > 0 && (
+                    <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                      {unreadMessages}
+                    </span>
+                  )}
               </Link>
             );
           })}
@@ -128,7 +143,9 @@ export default function RecruiterDashboard() {
 
         {/* User footer */}
         <div className="border-t border-outline-variant p-3">
-          <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
+          <div
+            className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}
+          >
             <img
               src={defaultAvatar}
               alt="Avatar"
@@ -153,7 +170,10 @@ export default function RecruiterDashboard() {
                   className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-error-container hover:text-on-error-container text-on-surface-variant transition-colors"
                   title="Logout"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: "18px" }}
+                  >
                     logout
                   </span>
                 </button>
@@ -177,7 +197,10 @@ export default function RecruiterDashboard() {
             onClick={() => setSidebarOpen(true)}
             className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-on-surface-variant"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "22px" }}
+            >
               menu
             </span>
           </button>

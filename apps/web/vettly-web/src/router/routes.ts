@@ -22,5 +22,7 @@ export const ROUTES = {
   RECRUITER_ANALYTICS: "/recruiter/analytics",
   RECRUITER_BIAS_REPORT: "/recruiter/bias-report",
   RECRUITER_MESSAGES: "/recruiter/messages",
+  RECRUITER_INTERVIEWS: "/recruiter/interviews",
+  CANDIDATE_INTERVIEWS: "/candidate/interviews",
   UNAUTHORIZED: "/unauthorized",
 } as const;

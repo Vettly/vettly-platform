@@ -18,6 +18,9 @@ services/api-gateway/api-gateway.exe
 **/venv/
 **/.env
 
+# Secrets
+services/secrets/*.json
+
 # General
 .DS_Store
 *.env

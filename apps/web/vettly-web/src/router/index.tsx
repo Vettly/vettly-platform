@@ -24,6 +24,8 @@ import RecruiterAnalyticsPage from "../pages/recruiter/RecruiterAnalyticsPage";
 import RecruiterBiasReportPage from "../pages/recruiter/RecruiterBiasReportPage";
 import MessagesPage from "../pages/messages/MessagesPage";
 import DocumentsPage from "../pages/candidate/DocumentsPage";
+import RecruiterInterviewsPage from "../pages/recruiter/RecruiterInterviewsPage";
+import CandidateInterviewsPage from "../pages/candidate/CandidateInterviewsPage";
 import { ROUTES } from "./routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,7 +43,8 @@ export const RoleRoute = ({
 }) => {
   const { user, isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to={ROUTES.AUTH.LOGIN} replace />;
-  if (user?.role !== allowedRole) return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+  if (user?.role !== allowedRole)
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
   return <>{children}</>;
 };
 
@@ -73,10 +76,14 @@ export const router = createBrowserRouter([
       { index: true, element: <CandidateHomePage /> },
       { path: "jobs", element: <JobListingsPage /> },
       { path: "applications", element: <CandidateApplicationsPage /> },
-      { path: "applications/:applicationId", element: <CandidateApplicationDetailPage /> },
+      {
+        path: "applications/:applicationId",
+        element: <CandidateApplicationDetailPage />,
+      },
       { path: "profile", element: <CandidateProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "documents", element: <DocumentsPage /> },
+      { path: "interviews", element: <CandidateInterviewsPage /> },
     ],
   },
   {
@@ -92,10 +99,14 @@ export const router = createBrowserRouter([
       { path: "jobs/:jobId/pipeline", element: <JobPipelinePage /> },
       { path: "organization", element: <RecruiterOrganizationPage /> },
       { path: "candidates", element: <RecruiterCandidatesPage /> },
-      { path: "candidates/:jobId/:applicationId", element: <RecruiterCandidateDetailPage /> },
+      {
+        path: "candidates/:jobId/:applicationId",
+        element: <RecruiterCandidateDetailPage />,
+      },
       { path: "analytics", element: <RecruiterAnalyticsPage /> },
       { path: "bias-report", element: <RecruiterBiasReportPage /> },
       { path: "messages", element: <MessagesPage /> },
+      { path: "interviews", element: <RecruiterInterviewsPage /> },
     ],
   },
   {

@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { label: "My applications", icon: "work", to: ROUTES.CANDIDATE_APPLICATIONS },
   { label: "Messages", icon: "chat_bubble", to: ROUTES.CANDIDATE_MESSAGES },
   { label: "Documents", icon: "folder_open", to: ROUTES.CANDIDATE_DOCUMENTS },
+  { label: "Interviews", icon: "video_call", to: ROUTES.CANDIDATE_INTERVIEWS },
   { label: "Profile", icon: "person", to: ROUTES.CANDIDATE_PROFILE },
 ];
 
@@ -33,13 +34,15 @@ export default function CandidateDashboard() {
   const { data: jobs } = useJobs();
   const newJobsCount = useNavBadgeCount(
     "candidateFindJobs",
-    (jobs ?? []).map((job) => job.createdAt)
+    (jobs ?? []).map((job) => job.createdAt),
   );
   useMessagingHub();
   const { data: unreadSummary } = useUnreadSummary();
   const unreadMessages = unreadSummary?.messages ?? 0;
   const { data: documents } = useMyDocuments();
-  const pendingDocsCount = (documents ?? []).filter((d) => d.status === "pending").length;
+  const pendingDocsCount = (documents ?? []).filter(
+    (d) => d.status === "pending",
+  ).length;
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -87,7 +90,10 @@ export default function CandidateDashboard() {
             onClick={() => setCollapsed((c) => !c)}
             className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "20px" }}
+            >
               {collapsed ? "chevron_right" : "chevron_left"}
             </span>
           </button>
@@ -113,27 +119,36 @@ export default function CandidateDashboard() {
                 `}
                 title={collapsed ? item.label : undefined}
               >
-                <span className="material-symbols-outlined shrink-0" style={{ fontSize: "22px" }}>
+                <span
+                  className="material-symbols-outlined shrink-0"
+                  style={{ fontSize: "22px" }}
+                >
                   {item.icon}
                 </span>
                 {!collapsed && (
                   <span className="font-body text-sm">{item.label}</span>
                 )}
-                {!collapsed && item.to === ROUTES.CANDIDATE_JOBS && newJobsCount > 0 && (
-                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
-                    {newJobsCount}
-                  </span>
-                )}
-                {!collapsed && item.to === ROUTES.CANDIDATE_MESSAGES && unreadMessages > 0 && (
-                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
-                    {unreadMessages}
-                  </span>
-                )}
-                {!collapsed && item.to === ROUTES.CANDIDATE_DOCUMENTS && pendingDocsCount > 0 && (
-                  <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
-                    {pendingDocsCount}
-                  </span>
-                )}
+                {!collapsed &&
+                  item.to === ROUTES.CANDIDATE_JOBS &&
+                  newJobsCount > 0 && (
+                    <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                      {newJobsCount}
+                    </span>
+                  )}
+                {!collapsed &&
+                  item.to === ROUTES.CANDIDATE_MESSAGES &&
+                  unreadMessages > 0 && (
+                    <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                      {unreadMessages}
+                    </span>
+                  )}
+                {!collapsed &&
+                  item.to === ROUTES.CANDIDATE_DOCUMENTS &&
+                  pendingDocsCount > 0 && (
+                    <span className="text-[11px] font-semibold text-secondary-fixed-dim bg-secondary-fixed-dim/[0.14] px-1.75 py-px rounded-full ml-auto">
+                      {pendingDocsCount}
+                    </span>
+                  )}
               </Link>
             );
           })}
@@ -141,7 +156,9 @@ export default function CandidateDashboard() {
 
         {/* User footer */}
         <div className="border-t border-outline-variant p-3">
-          <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
+          <div
+            className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}
+          >
             <img
               src={profile?.avatarUrl ?? defaultAvatar}
               alt="Avatar"
@@ -164,7 +181,10 @@ export default function CandidateDashboard() {
                 className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-error-container hover:text-on-error-container text-on-surface-variant transition-colors"
                 title="Logout"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "18px" }}
+                >
                   logout
                 </span>
               </button>
@@ -187,7 +207,10 @@ export default function CandidateDashboard() {
             onClick={() => setSidebarOpen(true)}
             className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-on-surface-variant"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "22px" }}
+            >
               menu
             </span>
           </button>
