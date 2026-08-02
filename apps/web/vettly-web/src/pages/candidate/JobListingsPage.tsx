@@ -418,7 +418,10 @@ export default function JobListingsPage() {
           jobId={detailsJobId}
           isApplied={appliedJobIds.has(detailsJobId)}
           isApplying={applyingId === detailsJobId}
-          matchScore={getMatchScore((jobs ?? []).find((j) => j.id === detailsJobId) ?? { skills: [] } as JobSummary)}
+          matchScore={(() => {
+            const detailsJob = (jobs ?? []).find((j) => j.id === detailsJobId);
+            return detailsJob ? getMatchScore(detailsJob) : null;
+          })()}
           onApply={() => handleApply(detailsJobId)}
           onClose={() => setDetailsJobId(null)}
         />

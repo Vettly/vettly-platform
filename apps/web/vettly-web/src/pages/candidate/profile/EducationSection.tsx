@@ -22,7 +22,8 @@ const eduSchema = z.object({
   gpa: z.coerce.number().min(0).max(4).optional().or(z.literal("")),
 });
 
-type EduForm = z.infer<typeof eduSchema>;
+type EduFormInput = z.input<typeof eduSchema>;
+type EduForm = z.output<typeof eduSchema>;
 
 function EducationForm({
   initial,
@@ -35,7 +36,7 @@ function EducationForm({
   onCancel: () => void;
   isPending: boolean;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<EduForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<EduFormInput, unknown, EduForm>({
     resolver: zodResolver(eduSchema),
     defaultValues: initial
       ? {
