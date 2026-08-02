@@ -104,6 +104,18 @@ Pure Redis subscriber — no HTTP endpoints. Subscribes to `vettly.events` and s
 
 Resolves job/user/participant details via plain HTTP GET to job-service, candidate-service, and auth-service's internal endpoints. Failures are logged and recovered so one bad message never kills the subscribe loop.
 
-## Not yet implemented
+## api-gateway (Go)
 
-- **api-gateway** (Go) — empty `main.go`. Not part of `docker-compose.yml`. Today, the frontend calls each service directly via its own `VITE_*_API_URL`.
+The single public entry point in front of every other backend service — a reverse proxy with centralized auth, rate limiting, and CORS.
+
+- Static route table (`routes.go`), matched by longest path prefix: `/api/auth`, `/api/candidates`, `/api/jobs`, `/api/organizations`, `/api/messaging` + `/hubs/messaging`, `/api/esign`, `/api/interviews`, `/api/matching` — each proxied to its backend's internal URL via `httputil.ReverseProxy` (which handles WebSocket upgrades natively, so the messaging SignalR hub works transparently through the gateway).
+- `screening-service` and every `/api/internal/*` route are **not** exposed through the gateway — internal/service-to-service only.
+- JWT validation (`middleware_auth.go`): local HMAC verification using the same `JWT_SECRET`/issuer/audience every other service already validates against — fast-fails protected routes with 401, forwards the original `Authorization` header unchanged. A handful of `auth-service` routes are public (register/login/refresh/OAuth); everything else requires a valid token.
+- Per-IP rate limiting (`middleware_ratelimit.go`) — in-memory token bucket, configurable via `RATE_LIMIT_RPS`/`RATE_LIMIT_BURST`.
+- CORS is centralized here (`CORS_ALLOWED_ORIGIN`) rather than duplicated per service.
+- `GET /health` is handled directly by the gateway (public, bypasses auth) for platform health checks.
+
+## Deployment notes
+
+- `render.yaml` at the repo root defines all 11 services as free-tier Render web services for a zero-cost deployment path (Neon for Postgres, Upstash/Redis Cloud for Redis instead of the docker-compose containers).
+- `.github/workflows/deploy.yml` builds and pushes every service's image to GHCR on manual trigger.

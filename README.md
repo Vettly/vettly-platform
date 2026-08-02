@@ -2,7 +2,7 @@
 
 Vettly is a smart recruitment platform that uses AI to screen resumes, rank candidates against job requirements, and flag bias in the hiring pipeline — alongside the usual job posting, application, e-signature, and messaging flows recruiters and candidates need.
 
-The platform is a polyglot microservices monorepo: a React SPA frontend, seven ASP.NET Core services, two Python/FastAPI AI services, and a Go notification worker, all sharing one Postgres instance and Redis for caching and async events.
+The platform is a polyglot microservices monorepo: a React SPA frontend, seven ASP.NET Core services, two Python/FastAPI AI services, and two Go services (an API gateway and an async notification worker), all sharing one Postgres instance and Redis for caching and async events.
 
 ## How a hire happens
 
@@ -13,6 +13,8 @@ The platform is a polyglot microservices monorepo: a React SPA frontend, seven A
 5. **Recruiter sends an offer** — esign-service generates a PDF offer letter, stores it in R2, and tracks a full audit trail (created/viewed/signed) alongside a SHA-256 hash of the signed document.
 6. **Candidate signs** the offer on the web portal.
 7. Throughout this flow, key events (`application_received`, `stage_changed`, `offer_ready`, `document_signed`) are published to Redis: messaging-service turns them into in-app notifications, and notification-service emails the relevant party.
+
+All of this traffic passes through **api-gateway**, the single public entry point in front of every other backend service — it validates JWTs, rate-limits, centralizes CORS, and reverse-proxies to the right backend by path prefix (with WebSocket passthrough for the messaging hub).
 
 See [`services/README.md`](./services/README.md) for endpoint-level detail on every service, including request/response shapes for the AI services.
 
@@ -32,7 +34,7 @@ vettly-platform/
 │   ├── messaging-service/    # .NET — real-time chat (SignalR)
 │   ├── esign-service/        # .NET — offer letters, e-signatures
 │   ├── interview-service/    # .NET — interview scheduling
-│   ├── api-gateway/          # Go — scaffold only, not yet implemented
+│   ├── api-gateway/          # Go — single public entry point: JWT validation, rate limiting, CORS, reverse proxy
 │   ├── notification-service/ # Go — async email notifications
 │   ├── screening-service/    # Python/FastAPI — resume screening & bias detection
 │   └── matching-service/     # Python/FastAPI — candidate↔job ranking & skill gap
@@ -53,9 +55,9 @@ vettly-platform/
 | interview-service | .NET / EF Core | Interview scheduling | 5057 |
 | matching-service | Python / FastAPI | Embedding-based candidate ranking & skill gap analysis | 5058 |
 | notification-service | Go | Consumes Redis events, sends email via SMTP (Mailtrap) | internal only (no host port) |
-| api-gateway | Go | **Not implemented** — empty entry point, not wired into `docker-compose.yml` |
+| api-gateway | Go | Single public entry point — JWT validation, per-IP rate limiting, centralized CORS, reverse proxy to every other backend service (incl. WebSocket passthrough for messaging) | 5000 |
 
-Services communicate synchronously over HTTP for request/response calls (e.g. `job-service` → `organization-service`, `candidate-service` → `screening-service`), and asynchronously via Redis pub/sub for fire-and-forget events consumed by `notification-service` (application received, document signed, offer ready, stage changed).
+Services communicate synchronously over HTTP for request/response calls (e.g. `job-service` → `organization-service`, `candidate-service` → `screening-service`), and asynchronously via Redis pub/sub for fire-and-forget events consumed by `notification-service` (application received, document signed, offer ready, stage changed). In production, `api-gateway` is the only service that should be publicly reachable — every other service is meant to sit on an internal network behind it, each still validating JWTs independently as defense in depth.
 
 Each service that touches Postgres owns its own database on the shared instance: `vettly_auth`, `vettly_jobs`, `vettly_organization`, `vettly_candidate`, `vettly_messaging`, `vettly_esign`, `vettly_interview`.
 
@@ -101,7 +103,7 @@ Pages are organized by role under `src/pages/`: `auth/`, `candidate/` (profile, 
    ```
    docker compose up --build
    ```
-   This brings up Postgres, Redis, and all implemented services (`auth`, `candidate`, `job`, `organization`, `messaging`, `esign`, `interview`, `screening`, `matching`, `notification`). `api-gateway` is not included since it isn't implemented yet.
+   This brings up Postgres, Redis, and all 11 services (`auth`, `candidate`, `job`, `organization`, `messaging`, `esign`, `interview`, `screening`, `matching`, `notification`, `api-gateway`).
 
 ### Frontend
 
@@ -160,6 +162,5 @@ VITE_INTERVIEW_API_URL=
 
 ## Project status
 
-- No CI/CD pipeline is configured yet (`.github/workflows` is currently empty).
-- `api-gateway` is a scaffold only — not implemented, not part of `docker-compose.yml`.
+- A manual (`workflow_dispatch`) GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and pushes all 11 service images to GHCR.
 - The root `.env.example` is out of date; use the variable list above rather than that file.
