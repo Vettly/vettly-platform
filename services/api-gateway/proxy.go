@@ -16,9 +16,24 @@ func NewReverseProxy(target *url.URL, corsAllowedOrigin string) *httputil.Revers
 	// hostname. Left unfixed, any upstream logic that builds absolute URLs
 	// from the incoming Host (e.g. a redirect) points back at the gateway
 	// instead of itself, producing a redirect loop.
+	//
+	// The original public-facing host/proto (what the browser actually used)
+	// is preserved via X-Forwarded-Host/-Proto instead, so upstream services
+	// that need their *public* identity — e.g. auth-service building an OAuth
+	// redirect_uri — can reconstruct it via ASP.NET Core's ForwardedHeaders
+	// middleware, without conflicting with the Host-header rewrite above.
 	originalDirector := proxy.Director
 	proxy.Director = func(r *http.Request) {
+		publicHost := r.Host
+		publicProto := r.Header.Get("X-Forwarded-Proto")
+		if publicProto == "" {
+			publicProto = "https"
+		}
+
 		originalDirector(r)
+
+		r.Header.Set("X-Forwarded-Host", publicHost)
+		r.Header.Set("X-Forwarded-Proto", publicProto)
 		r.Host = target.Host
 	}
 

@@ -88,11 +88,16 @@ var app = builder.Build();
 // Render terminates TLS at its edge and forwards plain HTTP internally, so
 // Kestrel would otherwise see every request as http:// — which breaks OAuth
 // redirect_uri generation (Google/GitHub require an exact https match) and
-// cookie Secure-flag detection. KnownNetworks/KnownProxies are cleared since
-// Render's edge IP isn't a fixed, known value.
+// cookie Secure-flag detection. X-Forwarded-Host is also trusted because
+// requests arrive via api-gateway, which sets it to the original public host
+// (its own domain) while rewriting the literal Host header to auth-service's
+// own hostname — without this, Request.Host here would be auth-service's
+// hostname instead of the gateway's, and the OAuth redirect_uri would point
+// at a URI nothing has registered. KnownNetworks/KnownProxies are cleared
+// since Render's edge IP isn't a fixed, known value.
 var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
 };
 forwardedHeadersOptions.KnownIPNetworks.Clear();
 forwardedHeadersOptions.KnownProxies.Clear();

@@ -25,6 +25,14 @@ func BuildRoutes(cfg Config) []RouteRule {
 		{Prefix: "/api/auth/oauth/callback", Target: cfg.AuthServiceURL, Public: true},
 		{Prefix: "/api/auth", Target: cfg.AuthServiceURL, Public: false},
 
+		// Google/GitHub redirect here directly after the user approves access.
+		// Must stay on the same origin as /api/auth/google|github (this gateway)
+		// so the OAuth correlation cookie set on the initiating request is still
+		// readable when the provider redirects back — otherwise ASP.NET Core's
+		// OAuth handler fails correlation validation and throws.
+		{Prefix: "/signin-google", Target: cfg.AuthServiceURL, Public: true},
+		{Prefix: "/signin-github", Target: cfg.AuthServiceURL, Public: true},
+
 		{Prefix: "/hubs/messaging", Target: cfg.MessagingServiceURL, Public: false},
 		{Prefix: "/api/messaging", Target: cfg.MessagingServiceURL, Public: false},
 
