@@ -9,6 +9,9 @@ using Vettly.MessagingService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<MessagingDbContext>(options =>
@@ -104,6 +107,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<MessagingDbContext>();
     db.Database.Migrate();
 }
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.UseCors("VettlyWeb");
 app.UseAuthentication();

@@ -34,6 +34,8 @@ services:
     build:
       context: ./services
       dockerfile: auth-service/Dockerfile
+    image: ghcr.io/vettly/vettly-auth-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-auth
     ports:
       - "5050:8080"
@@ -61,6 +63,8 @@ services:
     build:
       context: ./services
       dockerfile: job-service/Dockerfile
+    image: ghcr.io/vettly/vettly-job-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-job
     ports:
       - "5052:8080"
@@ -83,6 +87,8 @@ services:
     build:
       context: ./services
       dockerfile: organization-service/Dockerfile
+    image: ghcr.io/vettly/vettly-organization-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-organization
     ports:
       - "5053:8080"
@@ -99,6 +105,8 @@ services:
     build:
       context: ./services
       dockerfile: candidate-service/Dockerfile
+    image: ghcr.io/vettly/vettly-candidate-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-candidate
     ports:
       - "5051:8080"
@@ -129,6 +137,8 @@ services:
     build:
       context: ./services
       dockerfile: messaging-service/Dockerfile
+    image: ghcr.io/vettly/vettly-messaging-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-messaging
     ports:
       - "5055:8080"
@@ -152,6 +162,8 @@ services:
     build:
       context: ./services
       dockerfile: esign-service/Dockerfile
+    image: ghcr.io/vettly/vettly-esign-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-esign
     ports:
       - "5056:8080"
@@ -180,6 +192,8 @@ services:
     build:
       context: ./services/notification-service
       dockerfile: Dockerfile
+    image: ghcr.io/vettly/vettly-notification-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-notification
     environment:
       - REDIS_ADDR=redis:6379
@@ -206,6 +220,8 @@ services:
     build:
       context: ./services
       dockerfile: screening-service/Dockerfile
+    image: ghcr.io/vettly/vettly-screening-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-screening
     ports:
       - "5054:8000"
@@ -223,6 +239,8 @@ services:
     build:
       context: ./services
       dockerfile: interview-service/Dockerfile
+    image: ghcr.io/vettly/vettly-interview-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-interview
     ports:
       - "5057:8080"
@@ -246,6 +264,8 @@ services:
     build:
       context: ./services
       dockerfile: matching-service/Dockerfile
+    image: ghcr.io/vettly/vettly-matching-service:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: vettly-matching
     ports:
       - "5058:8080"
@@ -260,6 +280,47 @@ services:
       candidate-service:
         condition: service_started
       job-service:
+        condition: service_started
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    image: ghcr.io/vettly/vettly-api-gateway:${IMAGE_TAG:-latest}
+    pull_policy: always
+    container_name: vettly-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ISSUER=vettly-auth-service
+      - JWT_AUDIENCE=vettly-platform
+      - AUTH_SERVICE_URL=http://vettly-auth:8080
+      - CANDIDATE_SERVICE_URL=http://vettly-candidate:8080
+      - JOB_SERVICE_URL=http://vettly-job:8080
+      - ORGANIZATION_SERVICE_URL=http://vettly-organization:8080
+      - MESSAGING_SERVICE_URL=http://vettly-messaging:8080
+      - ESIGN_SERVICE_URL=http://vettly-esign:8080
+      - INTERVIEW_SERVICE_URL=http://vettly-interview:8080
+      - MATCHING_SERVICE_URL=http://vettly-matching:8080
+      - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      auth-service:
+        condition: service_started
+      candidate-service:
+        condition: service_started
+      job-service:
+        condition: service_started
+      organization-service:
+        condition: service_started
+      messaging-service:
+        condition: service_started
+      esign-service:
+        condition: service_started
+      interview-service:
+        condition: service_started
+      matching-service:
         condition: service_started
 
 volumes:

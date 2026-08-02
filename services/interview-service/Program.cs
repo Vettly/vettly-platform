@@ -7,6 +7,9 @@ using Vettly.InterviewService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddOpenApi();
 
 // PostgreSQL
@@ -77,6 +80,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<InterviewDbContext>();
     db.Database.Migrate();
 }
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapOpenApi();
 app.UseCors("VettlyWeb");

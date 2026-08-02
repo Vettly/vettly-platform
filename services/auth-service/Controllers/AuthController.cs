@@ -28,7 +28,7 @@ namespace Vettly.AuthService.Controllers
             {
                 HttpOnly = true,
                 Secure = !string.Equals(_config["ASPNETCORE_ENVIRONMENT"], "Development", StringComparison.OrdinalIgnoreCase),
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Path = "/api/auth",
                 MaxAge = TimeSpan.FromDays(expiryDays)
             });

@@ -1,0 +1,303 @@
+services:
+  - type: web
+    name: vettly-auth-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/auth-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Jwt__AccessTokenExpirationMinutes
+        value: "15"
+      - key: Jwt__RefreshTokenExpirationDays
+        value: "1"
+      - key: Redis__ConnectionString
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: OAuth__Google__ClientId
+        sync: false
+      - key: OAuth__Google__ClientSecret
+        sync: false
+      - key: OAuth__GitHub__ClientId
+        sync: false
+      - key: OAuth__GitHub__ClientSecret
+        sync: false
+      - key: Frontend__BaseUrl
+        sync: false
+
+  - type: web
+    name: vettly-organization-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/organization-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__OrganizationDb
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Cors__AllowedOrigins__0
+        sync: false
+
+  - type: web
+    name: vettly-job-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/job-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Redis__ConnectionString
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: OrganizationService__BaseUrl
+        sync: false
+
+  - type: web
+    name: vettly-candidate-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/candidate-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__CandidateDb
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: R2__AccountId
+        sync: false
+      - key: R2__AccessKey
+        sync: false
+      - key: R2__SecretKey
+        sync: false
+      - key: R2__BucketName
+        sync: false
+      - key: R2__PublicUrl
+        sync: false
+      - key: Redis__ConnectionString
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: JobService__BaseUrl
+        sync: false
+      - key: ScreeningService__BaseUrl
+        sync: false
+      - key: CandidateService__SelfUrl
+        sync: false
+
+  - type: web
+    name: vettly-messaging-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/messaging-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__MessagingDb
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Redis__ConnectionString
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: JobService__BaseUrl
+        sync: false
+      - key: CandidateService__BaseUrl
+        sync: false
+      - key: AuthService__BaseUrl
+        sync: false
+
+  - type: web
+    name: vettly-esign-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/esign-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__EsignDb
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Redis__ConnectionString
+        sync: false
+      - key: R2__AccountId
+        sync: false
+      - key: R2__AccessKey
+        sync: false
+      - key: R2__SecretKey
+        sync: false
+      - key: R2__BucketName
+        sync: false
+      - key: R2__PublicUrl
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: JobService__BaseUrl
+        sync: false
+      - key: CandidateService__BaseUrl
+        sync: false
+      - key: AuthService__BaseUrl
+        sync: false
+
+  - type: web
+    name: vettly-interview-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/interview-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__InterviewDb
+        sync: false
+      - key: Jwt__SecretKey
+        sync: false
+      - key: Jwt__Issuer
+        value: vettly-auth-service
+      - key: Jwt__Audience
+        value: vettly-platform
+      - key: Cors__AllowedOrigins__0
+        sync: false
+      - key: CandidateService__BaseUrl
+        sync: false
+      - key: JobService__BaseUrl
+        sync: false
+
+  - type: web
+    name: vettly-screening-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/screening-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: SCREENING_JOB_SERVICE_URL
+        sync: false
+      - key: R2__AccountId
+        sync: false
+      - key: R2__AccessKey
+        sync: false
+      - key: R2__SecretKey
+        sync: false
+      - key: R2__BucketName
+        sync: false
+
+  - type: web
+    name: vettly-matching-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services
+    dockerfilePath: ./services/matching-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ISSUER
+        value: vettly-auth-service
+      - key: JWT_AUDIENCE
+        value: vettly-platform
+      - key: CANDIDATE_SERVICE_BASE_URL
+        sync: false
+      - key: JOB_SERVICE_BASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGIN
+        sync: false
+
+  - type: web
+    name: vettly-notification-service
+    runtime: docker
+    plan: free
+    dockerContext: ./services/notification-service
+    dockerfilePath: ./services/notification-service/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: REDIS_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: JOB_SERVICE_URL
+        sync: false
+      - key: CANDIDATE_SERVICE_URL
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: FRONTEND_BASE_URL
+        sync: false
+
+  - type: web
+    name: vettly-api-gateway
+    runtime: docker
+    plan: free
+    dockerContext: ./services/api-gateway
+    dockerfilePath: ./services/api-gateway/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ISSUER
+        value: vettly-auth-service
+      - key: JWT_AUDIENCE
+        value: vettly-platform
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: CANDIDATE_SERVICE_URL
+        sync: false
+      - key: JOB_SERVICE_URL
+        sync: false
+      - key: ORGANIZATION_SERVICE_URL
+        sync: false
+      - key: MESSAGING_SERVICE_URL
+        sync: false
+      - key: ESIGN_SERVICE_URL
+        sync: false
+      - key: INTERVIEW_SERVICE_URL
+        sync: false
+      - key: MATCHING_SERVICE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGIN
+        sync: false

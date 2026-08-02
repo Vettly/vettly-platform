@@ -2,6 +2,8 @@ import { useQueries } from "@tanstack/react-query";
 import { createClient } from "../api/client";
 import { CANDIDATE_ENDPOINTS } from "../api/candidate/endpoints";
 import { useMyJobs } from "../api/job/job.api";
+import { pipelineKeys } from "../api/job/pipeline.api";
+import { recruiterCandidateKeys } from "../api/candidate/recruiter.api";
 import type {
   ApplicationSummary,
   CandidateProfile,
@@ -27,7 +29,7 @@ export function useRecruiterCandidates(): {
 
   const pipelineQueries = useQueries({
     queries: jobList.map((job) => ({
-      queryKey: ["pipeline", job.id, undefined] as const,
+      queryKey: pipelineKeys.byJob(job.id),
       queryFn: async () => {
         const res = await jobClient.get<PipelineStage[]>(`/api/jobs/${job.id}/pipeline`);
         return res.data;
@@ -43,40 +45,53 @@ export function useRecruiterCandidates(): {
     data.forEach((entry) => entries.push({ entry, job }));
   });
 
+  
+  const uniqueCandidateIds = Array.from(
+    new Set(entries.map(({ entry }) => entry.candidateId).filter(Boolean))
+  );
+  const uniqueApplicationIds = Array.from(
+    new Set(entries.map(({ entry }) => entry.applicationId).filter(Boolean))
+  );
+
   const profileQueries = useQueries({
-    queries: entries.map(({ entry }) => ({
-      queryKey: ["candidate", "recruiter-profile", entry.candidateId] as const,
+    queries: uniqueCandidateIds.map((candidateId) => ({
+      queryKey: recruiterCandidateKeys.profile(candidateId),
       queryFn: async () => {
         const res = await candidateClient.get<CandidateProfile>(
-          CANDIDATE_ENDPOINTS.CANDIDATE_PROFILE(entry.candidateId)
+          CANDIDATE_ENDPOINTS.CANDIDATE_PROFILE(candidateId)
         );
         return res.data;
       },
-      enabled: !!entry.candidateId,
     })),
   });
 
   const summaryQueries = useQueries({
-    queries: entries.map(({ entry }) => ({
-      queryKey: ["candidate", "application-summary", entry.applicationId] as const,
+    queries: uniqueApplicationIds.map((applicationId) => ({
+      queryKey: recruiterCandidateKeys.applicationSummary(applicationId),
       queryFn: async () => {
         const res = await candidateClient.get<ApplicationSummary>(
-          CANDIDATE_ENDPOINTS.APPLICATION_SUMMARY(entry.applicationId)
+          CANDIDATE_ENDPOINTS.APPLICATION_SUMMARY(applicationId)
         );
         return res.data;
       },
-      enabled: !!entry.applicationId,
     })),
   });
+
+  const profileById = new Map(
+    uniqueCandidateIds.map((id, i) => [id, profileQueries[i]?.data])
+  );
+  const summaryById = new Map(
+    uniqueApplicationIds.map((id, i) => [id, summaryQueries[i]?.data])
+  );
 
   const detailsLoading =
     profileQueries.some((q) => q.isLoading) || summaryQueries.some((q) => q.isLoading);
 
-  const rows: RecruiterCandidateRow[] = entries.map(({ entry, job }, i) => ({
+  const rows: RecruiterCandidateRow[] = entries.map(({ entry, job }) => ({
     entry,
     job,
-    profile: profileQueries[i]?.data,
-    summary: summaryQueries[i]?.data,
+    profile: profileById.get(entry.candidateId),
+    summary: summaryById.get(entry.applicationId),
   }));
 
   return {

@@ -11,6 +11,9 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<EsignDbContext>(options =>
@@ -87,6 +90,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<EsignDbContext>();
     db.Database.Migrate();
 }
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.UseCors("VettlyWeb");
 app.UseAuthentication();

@@ -9,6 +9,9 @@ using Vettly.AuthService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -80,6 +83,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
+
+// auto migrate
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider
+        .GetRequiredService<AuthDbContext>();
+    db.Database.Migrate();
+}
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
 app.UseCors("VettlyWeb");
 app.UseAuthentication();
 app.UseAuthorization();
