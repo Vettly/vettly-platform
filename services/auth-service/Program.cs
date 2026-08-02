@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -83,6 +84,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
+
+// Render terminates TLS at its edge and forwards plain HTTP internally, so
+// Kestrel would otherwise see every request as http:// — which breaks OAuth
+// redirect_uri generation (Google/GitHub require an exact https match) and
+// cookie Secure-flag detection. KnownNetworks/KnownProxies are cleared since
+// Render's edge IP isn't a fixed, known value.
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 // auto migrate
 using (var scope = app.Services.CreateScope())
