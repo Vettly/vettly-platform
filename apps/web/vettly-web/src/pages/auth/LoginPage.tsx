@@ -225,7 +225,7 @@ export default function LoginPage() {
           {/* Google */}
           <button
             type="button"
-            onClick={() => { globalThis.location.href = "http://localhost:5050/api/auth/google?mode=login"; }}
+            onClick={() => { globalThis.location.href = `${import.meta.env.VITE_AUTH_API_URL}/api/auth/google?mode=login`; }}
             className="w-full flex items-center justify-center gap-3 bg-surface-container-low hover:bg-surface-container py-3.5 rounded-xl font-headline font-bold text-sm text-on-surface transition-all"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -240,7 +240,7 @@ export default function LoginPage() {
           {/* GitHub */}
           <button
             type="button"
-            onClick={() => { globalThis.location.href = "http://localhost:5050/api/auth/github?mode=login"; }}
+            onClick={() => { globalThis.location.href = `${import.meta.env.VITE_AUTH_API_URL}/api/auth/github?mode=login`; }}
             className="w-full flex items-center justify-center gap-3 bg-surface-container-low hover:bg-surface-container py-3.5 rounded-xl font-headline font-bold text-sm text-on-surface transition-all"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
