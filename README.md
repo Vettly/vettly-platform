@@ -4,6 +4,50 @@ Vettly is a smart recruitment platform that uses AI to screen resumes, rank cand
 
 The platform is a polyglot microservices monorepo: a React SPA frontend, seven ASP.NET Core services, two Python/FastAPI AI services, and two Go services (an API gateway and an async notification worker), all sharing one Postgres instance and Redis for caching and async events.
 
+## Live Demo
+
+- **App**: [vettly-platform.pages.dev](https://vettly-platform.pages.dev)
+- **API (gateway)**: [vettly-api-gateway.onrender.com](https://vettly-api-gateway.onrender.com)
+
+Deployed entirely on free tiers — see [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for the full stack, every individual service's URL, and how it's wired together.
+
+## Screenshots
+
+### Recruiter portal
+
+<table>
+<tr>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153514.png"/><br><sub><b>Dashboard</b> — active jobs, applicant totals, pipeline breakdown</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153555.png"/><br><sub><b>Jobs</b> — manage postings by status (open/draft/closed/archived)</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153619.png"/><br><sub><b>Pipeline board</b> — drag candidates through applied → hired/rejected</sub></td>
+</tr>
+<tr>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153625.png"/><br><sub><b>Candidates</b> — every applicant across all jobs, with match score</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153634.png"/><br><sub><b>Candidate profile</b> — AI/match scores, skill gap, bias check</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153721.png"/><br><sub><b>Messages</b> — direct chat with candidates (SignalR, real-time)</sub></td>
+</tr>
+<tr>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153744.png"/><br><sub><b>Organization</b> — company profile, team, join code</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20153751.png"/><br><sub><b>Analytics</b> — hire rate and conversion funnel</sub></td>
+<td width="33%"><img src="Assets/Recruiter/Screenshot%202026-08-02%20154102.png"/><br><sub><b>Interviews</b> — scheduled interviews with join links</sub></td>
+</tr>
+</table>
+
+### Candidate portal
+
+<table>
+<tr>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153829.png"/><br><sub><b>Dashboard</b> — applications, profile strength, average match</sub></td>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153840.png"/><br><sub><b>Find jobs</b> — browse open roles with live match %</sub></td>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153851.png"/><br><sub><b>Job details</b> — salary, skills, benefits, one-click apply</sub></td>
+</tr>
+<tr>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153901.png"/><br><sub><b>My applications</b> — track status across every job applied to</sub></td>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153927.png"/><br><sub><b>Documents</b> — e-sign offer letters from the document vault</sub></td>
+<td width="33%"><img src="Assets/Candidate/Screenshot%202026-08-02%20153944.png"/><br><sub><b>Profile</b> — experience, education, skills, resume</sub></td>
+</tr>
+</table>
+
 ## How a hire happens
 
 1. **Candidate applies** — candidate-service stores the application and asks screening-service to score the resume against the job (async callback pattern: screening-service PATCHes the AI score, match score, skill gap, and any bias flags back onto the application once ready).
