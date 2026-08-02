@@ -77,12 +77,15 @@ jobs:
   deploy:
     needs: build-push
     runs-on: ubuntu-latest
-    if: ${{ vars.COOLIFY_WEBHOOK_URL != '' || secrets.COOLIFY_WEBHOOK_URL != '' }}
     steps:
       - name: Trigger Coolify redeploy
         env:
           COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
         run: |
+          if [ -z "$COOLIFY_WEBHOOK_URL" ]; then
+            echo "COOLIFY_WEBHOOK_URL not set, skipping deploy trigger"
+            exit 0
+          fi
           curl -fsSL -X POST "$COOLIFY_WEBHOOK_URL" \
             -H "Authorization: Bearer $COOLIFY_API_TOKEN"
