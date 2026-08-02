@@ -11,6 +11,17 @@ import (
 func NewReverseProxy(target *url.URL, corsAllowedOrigin string) *httputil.ReverseProxy {
 	proxy := httputil.NewSingleHostReverseProxy(target)
 
+	// NewSingleHostReverseProxy rewrites the request URL but not the Host
+	// header, so upstream services would otherwise see the gateway's own
+	// hostname. Left unfixed, any upstream logic that builds absolute URLs
+	// from the incoming Host (e.g. a redirect) points back at the gateway
+	// instead of itself, producing a redirect loop.
+	originalDirector := proxy.Director
+	proxy.Director = func(r *http.Request) {
+		originalDirector(r)
+		r.Host = target.Host
+	}
+
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		log.Printf("proxy error for %s %s -> %s: %v", r.Method, r.URL.Path, target, err)
 		setCORSHeaders(w, corsAllowedOrigin)
