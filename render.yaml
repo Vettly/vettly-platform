@@ -1,15 +1,10 @@
 services:
   - type: web
     name: vettly-auth-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/auth-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-auth-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/auth-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__DefaultConnection
         sync: false
@@ -40,15 +35,10 @@ services:
 
   - type: web
     name: vettly-organization-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/organization-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-organization-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/organization-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__OrganizationDb
         sync: false
@@ -63,15 +53,10 @@ services:
 
   - type: web
     name: vettly-job-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/job-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-job-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/job-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__DefaultConnection
         sync: false
@@ -90,15 +75,10 @@ services:
 
   - type: web
     name: vettly-candidate-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/candidate-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-candidate-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/candidate-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__CandidateDb
         sync: false
@@ -131,15 +111,10 @@ services:
 
   - type: web
     name: vettly-messaging-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/messaging-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-messaging-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/messaging-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__MessagingDb
         sync: false
@@ -162,15 +137,10 @@ services:
 
   - type: web
     name: vettly-esign-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/esign-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-esign-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/esign-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__EsignDb
         sync: false
@@ -203,15 +173,10 @@ services:
 
   - type: web
     name: vettly-interview-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/interview-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-interview-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/interview-service/**
-        - services/shared/**
     envVars:
       - key: ConnectionStrings__InterviewDb
         sync: false
@@ -230,14 +195,10 @@ services:
 
   - type: web
     name: vettly-screening-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/screening-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-screening-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/screening-service/**
     envVars:
       - key: SCREENING_JOB_SERVICE_URL
         sync: false
@@ -252,14 +213,10 @@ services:
 
   - type: web
     name: vettly-matching-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services
-    dockerfilePath: ./services/matching-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-matching-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/matching-service/**
     envVars:
       - key: JWT_SECRET
         sync: false
@@ -276,14 +233,10 @@ services:
 
   - type: web
     name: vettly-notification-service
-    runtime: docker
-    plan: free
-    dockerContext: ./services/notification-service
-    dockerfilePath: ./services/notification-service/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-notification-service:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/notification-service/**
     envVars:
       - key: REDIS_URL
         sync: false
@@ -308,14 +261,10 @@ services:
 
   - type: web
     name: vettly-api-gateway
-    runtime: docker
-    plan: free
-    dockerContext: ./services/api-gateway
-    dockerfilePath: ./services/api-gateway/Dockerfile
+    runtime: image
+    image:
+      url: ghcr.io/vettly/vettly-api-gateway:latest
     healthCheckPath: /health
-    buildFilter:
-      paths:
-        - services/api-gateway/**
     envVars:
       - key: JWT_SECRET
         sync: false

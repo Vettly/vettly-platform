@@ -1,6 +1,8 @@
 name: Build & Push Images
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -8,7 +10,59 @@ env:
   NAMESPACE: vettly
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth-service: ${{ steps.filter.outputs.auth-service }}
+      candidate-service: ${{ steps.filter.outputs.candidate-service }}
+      job-service: ${{ steps.filter.outputs.job-service }}
+      organization-service: ${{ steps.filter.outputs.organization-service }}
+      messaging-service: ${{ steps.filter.outputs.messaging-service }}
+      esign-service: ${{ steps.filter.outputs.esign-service }}
+      interview-service: ${{ steps.filter.outputs.interview-service }}
+      screening-service: ${{ steps.filter.outputs.screening-service }}
+      matching-service: ${{ steps.filter.outputs.matching-service }}
+      notification-service: ${{ steps.filter.outputs.notification-service }}
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            auth-service:
+              - 'services/auth-service/**'
+              - 'services/shared/**'
+            candidate-service:
+              - 'services/candidate-service/**'
+              - 'services/shared/**'
+            job-service:
+              - 'services/job-service/**'
+              - 'services/shared/**'
+            organization-service:
+              - 'services/organization-service/**'
+              - 'services/shared/**'
+            messaging-service:
+              - 'services/messaging-service/**'
+              - 'services/shared/**'
+            esign-service:
+              - 'services/esign-service/**'
+              - 'services/shared/**'
+            interview-service:
+              - 'services/interview-service/**'
+              - 'services/shared/**'
+            screening-service:
+              - 'services/screening-service/**'
+            matching-service:
+              - 'services/matching-service/**'
+            notification-service:
+              - 'services/notification-service/**'
+            api-gateway:
+              - 'services/api-gateway/**'
+
   build-push:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs[matrix.name] == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,36 +73,47 @@ jobs:
           - name: auth-service
             context: ./services
             dockerfile: ./services/auth-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_AUTH_SERVICE
           - name: candidate-service
             context: ./services
             dockerfile: ./services/candidate-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_CANDIDATE_SERVICE
           - name: job-service
             context: ./services
             dockerfile: ./services/job-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_JOB_SERVICE
           - name: organization-service
             context: ./services
             dockerfile: ./services/organization-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_ORGANIZATION_SERVICE
           - name: messaging-service
             context: ./services
             dockerfile: ./services/messaging-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_MESSAGING_SERVICE
           - name: esign-service
             context: ./services
             dockerfile: ./services/esign-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_ESIGN_SERVICE
           - name: interview-service
             context: ./services
             dockerfile: ./services/interview-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_INTERVIEW_SERVICE
           - name: screening-service
             context: ./services
             dockerfile: ./services/screening-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_SCREENING_SERVICE
           - name: matching-service
             context: ./services
             dockerfile: ./services/matching-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_MATCHING_SERVICE
           - name: notification-service
             context: ./services/notification-service
             dockerfile: ./services/notification-service/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_NOTIFICATION_SERVICE
           - name: api-gateway
             context: ./services/api-gateway
             dockerfile: ./services/api-gateway/Dockerfile
+            deployHookSecret: RENDER_DEPLOY_HOOK_API_GATEWAY
     steps:
       - uses: actions/checkout@v4
 
@@ -74,18 +139,12 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
-  deploy:
-    needs: build-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Coolify redeploy
+      - name: Trigger Render deploy for ${{ matrix.name }}
         env:
-          COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
-          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          DEPLOY_HOOK_URL: ${{ secrets[matrix.deployHookSecret] }}
         run: |
-          if [ -z "$COOLIFY_WEBHOOK_URL" ]; then
-            echo "COOLIFY_WEBHOOK_URL not set, skipping deploy trigger"
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "No deploy hook configured for ${{ matrix.name }} (secret ${{ matrix.deployHookSecret }} not set), skipping"
             exit 0
           fi
-          curl -fsSL -X POST "$COOLIFY_WEBHOOK_URL" \
-            -H "Authorization: Bearer $COOLIFY_API_TOKEN"
+          curl -fsSL -X POST "$DEPLOY_HOOK_URL"
