@@ -1,3 +1,4 @@
+# CI pipeline verification: this comment should trigger only matching-service to rebuild and redeploy.
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
