@@ -62,7 +62,6 @@ jobs:
 
   build-push:
     needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs[matrix.name] == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,9 +114,20 @@ jobs:
             dockerfile: ./services/api-gateway/Dockerfile
             deployHookSecret: RENDER_DEPLOY_HOOK_API_GATEWAY
     steps:
+      - name: Check whether this service changed
+        id: should-build
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ needs.detect-changes.outputs[matrix.name] }}" = "true" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.should-build.outputs.run == 'true'
 
       - name: Log in to GHCR
+        if: steps.should-build.outputs.run == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -125,9 +135,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
+        if: steps.should-build.outputs.run == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push ${{ matrix.name }}
+        if: steps.should-build.outputs.run == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -140,6 +152,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
       - name: Trigger Render deploy for ${{ matrix.name }}
+        if: steps.should-build.outputs.run == 'true'
         env:
           DEPLOY_HOOK_URL: ${{ secrets[matrix.deployHookSecret] }}
         run: |
