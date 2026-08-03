@@ -6,6 +6,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/auth-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/auth-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__DefaultConnection
         sync: false
@@ -41,6 +45,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/organization-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/organization-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__OrganizationDb
         sync: false
@@ -60,6 +68,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/job-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/job-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__DefaultConnection
         sync: false
@@ -83,6 +95,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/candidate-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/candidate-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__CandidateDb
         sync: false
@@ -120,6 +136,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/messaging-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/messaging-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__MessagingDb
         sync: false
@@ -147,6 +167,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/esign-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/esign-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__EsignDb
         sync: false
@@ -184,6 +208,10 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/interview-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/interview-service/**
+        - services/shared/**
     envVars:
       - key: ConnectionStrings__InterviewDb
         sync: false
@@ -207,6 +235,9 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/screening-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/screening-service/**
     envVars:
       - key: SCREENING_JOB_SERVICE_URL
         sync: false
@@ -226,6 +257,9 @@ services:
     dockerContext: ./services
     dockerfilePath: ./services/matching-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/matching-service/**
     envVars:
       - key: JWT_SECRET
         sync: false
@@ -247,6 +281,9 @@ services:
     dockerContext: ./services/notification-service
     dockerfilePath: ./services/notification-service/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/notification-service/**
     envVars:
       - key: REDIS_URL
         sync: false
@@ -276,6 +313,9 @@ services:
     dockerContext: ./services/api-gateway
     dockerfilePath: ./services/api-gateway/Dockerfile
     healthCheckPath: /health
+    buildFilter:
+      paths:
+        - services/api-gateway/**
     envVars:
       - key: JWT_SECRET
         sync: false
